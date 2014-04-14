@@ -1,20 +1,40 @@
 #ifndef _FIFO_H_
 #define _FIFO_H_
+#include <stdio.h>
 #include <assert.h>
 template <typename FIFOType_t>
 class FIFO
 {
 	public:	
-		FIFO(const int size)
+		FIFO()
 		{
-			mData = new FIFOType_t[size];
+			mData = NULL;
+			mReadPos = 0;
+			mWritePos = 0;
+			mSize = 0;
+			mCount = 0;
+		}
+		~FIFO()
+        {
+            if(mData)
+            {
+                delete[] mData;
+                mData = NULL;
+            }
+        }
+        void ReSize(const int size)
+        {
+            if(mData)
+            {
+                delete[] mData;
+            }
+            mData = new FIFOType_t[size];
 			assert(mData);
 			mReadPos = 0;
 			mWritePos = 0;
 			mSize = size;
 			mCount = 0;
-		}
-		~FIFO(){delete[] mData;}
+        }
 		void Clear()
 		{
 			mReadPos = 0;

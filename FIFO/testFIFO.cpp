@@ -1,10 +1,19 @@
 #include "FIFO.h"
-#include <stdio.h>
 
 int main()
 {
-    FIFO<int> A(10);
-	FIFO<double> B(10);
+    FIFO<int> C[100][10];
+    FIFO<int> A;
+	FIFO<double> B;
+    for(int i=0; i<100; ++i)
+    {
+        for(int j=0; j<10; ++j)
+        {
+            C[i][j].ReSize(3);
+        }
+    }
+    A.ReSize(10);
+    B.ReSize(10);
 	A.Push(1);
     A.Push(2);
 	B.Push(0.3);

@@ -1,5 +1,6 @@
 #ifndef _Matrix_H_
 #define _Matrix_H_
+#include <stdio.h>
 #include <assert.h>
 template <typename Matrix_t>
 class Matrix
@@ -7,16 +8,30 @@ class Matrix
     public:
         Matrix_t *mData;
         int row, column;
-        Matrix(int m, int n)
+        Matrix()
         {
+            mData = NULL;
+            row = 0;
+            column = 0;
+        }
+        ~Matrix()
+        {
+            if(mData)
+            {
+                delete[] mData;
+                mData = NULL;
+            }
+        }
+        void ReSize(int m, int n)
+        {
+            if(mData)
+            {
+                delete[] mData;
+            }
             mData = new Matrix_t[m * n];
             assert(mData);
             row = m;
             column = n;
-        }
-        ~Matrix()
-        {
-            delete []mData;
         }
         void Set(int i, int j, Matrix_t value)
         {
