@@ -5,22 +5,27 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 #define TCPSocket_RECV_FLAG 0
 #define TCPSocket_SEND_FLAG 0
 #define Socket_SERV_PORT	7777
 class TCPSocket
 {
-	public:	
-		static TCPSocket *GetInstance();
-		void InitialServer();
-		void InitialClient(const char *);
-		int  TCPSocketWrite(const char *, int );
-		int  TCPSocketRead(char *, int );
+    public:	
+        static TCPSocket *GetInstance();
+        void InitialServer();
+        void InitialClient(const char *);
+        void ReconnTCPSocket();
+        int  TCPSocketWrite(const char *, int );
+        int  TCPSocketRead(char *, int );
         int  TCPSocketReadLine(char *, int );
-	private:
-		int connfd;
-		static TCPSocket *Socket_instance;
-		TCPSocket();
-		virtual ~TCPSocket();
+    private:
+        int listenfd;
+        int connfd;
+        bool reconn;
+        static TCPSocket *Socket_instance;
+
+        TCPSocket();
+        virtual ~TCPSocket();
 };
 #endif
