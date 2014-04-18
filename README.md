@@ -9,6 +9,13 @@ FIFO:
     Exist();    判断元素是否存在
     Empty();    判断当前FIFO是否为空
     GetLength();    获取当前FIFO有效值的大小
+LogSet:
+    Log类，维护各个模块的打印状态
+    IsLogToScrn();  判断当前模块是否打印到屏幕
+    IsLogTOFile();  判断当前模块是否打印到文件
+    SetLogToScrn(); 设置当前模块打印到屏幕的状态
+    SetLogToFile(); 设置当前模块打印到文件的状态
+    SetBoth();      同时设置当前模块打印到屏幕和文件的状态
 Matrix:
     二维矩阵类
     ReSize();   分配数据区域，以支持数组式定义,每个对象需要ReSize()
