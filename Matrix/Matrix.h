@@ -1,12 +1,12 @@
 #ifndef _Matrix_H_
 #define _Matrix_H_
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 template <typename Matrix_t>
 class Matrix
 {
     public:
-        Matrix_t *mData;
         int row, column;
         Matrix()
         {
@@ -27,6 +27,7 @@ class Matrix
             if(mData)
             {
                 delete[] mData;
+                mData = NULL;
             }
             mData = new Matrix_t[m * n];
             assert(mData);
@@ -37,49 +38,93 @@ class Matrix
         {
             mData[i*column + j] = value;
         }
-        void Add(Matrix &A, Matrix &B)
+        Matrix_t Get(int i, int j)
         {
-            assert(A.row == B.row);
-            assert(A.column == B.column);
+            return mData[i*column + j];
+        }
+        Matrix &operator=(const Matrix &source)
+        {
+            if(row*column != source.row*source.column)
+            {
+                ReSize(source.row, source.column);
+            }
+            row = source.row;
+            column = source.column;
+            memcpy(mData, source.mData, sizeof(Matrix_t)*row*column);
+            return *this;
+        }
+        Matrix operator+(const Matrix &A)
+        {
             assert(A.row == row);
             assert(A.column == column);
-            for(int i=0; i<A.row; ++i)
+            Matrix res;
+            res.ReSize(row, column);
+            for(int i=0; i<row; ++i)
             {
-                for(int j=0; j<A.column; ++j)
+                for(int j=0; j<column; ++j)
                 {
-                    int id = i*A.column + j;
-                    mData[id] = A.mData[id] + B.mData[id];
+                    int id = i*column + j;
+                    res.mData[id] = mData[id] + A.mData[id];
                 }
             }
+            return res;
         }
-        void Mus(Matrix &A, Matrix &B)
+        Matrix operator-(const Matrix &A)
         {
-            assert(A.row == B.row);
-            assert(A.column == B.column);
             assert(A.row == row);
             assert(A.column == column);
-            for(int i=0; i<A.row; ++i)
+            Matrix res;
+            res.ReSize(row, column);
+            for(int i=0; i<row; ++i)
             {
-                for(int j=0; j<A.column; ++j)
+                for(int j=0; j<column; ++j)
                 {
-                    int id = i*A.column + j;
-                    mData[id] = A.mData[id] - B.mData[id];
+                    int id = i*column + j;
+                    res.mData[id] = mData[id] - A.mData[id];
                 }
             }
+            return res;
         }
-        void Mul(Matrix &A, Matrix &B)
+        Matrix operator*(const Matrix &A)
         {
-            assert(A.column == B.row);
-            assert(A.row == row);
-            assert(B.column == column);
-            for(int i=0; i<A.row; ++i)
+            assert(column == A.row);
+            Matrix res;
+            res.ReSize(row, A.column);
+            for(int i=0; i<row; ++i)
             {
-                for(int k=0; k<A.column; ++k)
+                for(int k=0; k<column; ++k)
                 {
-                    for(int j=0; j<B.column; ++j)
+                    for(int j=0; j<A.column; ++j)
                     {
-                        mData[i*B.column + j] += A.mData[i*A.column + k] * B.mData[k*B.column + j];
+                        res.mData[i*A.column + j] += mData[i*column + k] * A.mData[k*A.column + j];
                     }
+                }
+            }
+            return res;
+        }
+        Matrix &operator+=(const Matrix &A)
+        {
+            assert(A.row == row);
+            assert(A.column == column);
+            for(int i=0; i<row; ++i)
+            {
+                for(int j=0; j<column; ++j)
+                {
+                    int id = i*column + j;
+                    mData[id] += A.mData[id];
+                }
+            }
+        }
+        Matrix &operator-=(const Matrix &A)
+        {
+            assert(A.row == row);
+            assert(A.column == column);
+            for(int i=0; i<row; ++i)
+            {
+                for(int j=0; j<column; ++j)
+                {
+                    int id = i*column + j;
+                    mData[id] -= A.mData[id];
                 }
             }
         }
@@ -108,10 +153,14 @@ class Matrix
             mData[7] = (b*g - a*h) / fa;
             mData[8] = (a*e - b*d) / fa;
         }
-        void Atr(Matrix &A)
+        Matrix& Atr(const Matrix &A)
         {
-            assert(A.row == column);
-            assert(A.column == row);
+            if(row*column != A.row*A.column)
+            {
+                ReSize(A.column, A.row);
+            }
+            row = A.column;
+            column = A.row;
             for(int i=0; i<A.row; ++i)
             {
                 for(int j=0; j<A.column; ++j)
@@ -119,6 +168,9 @@ class Matrix
                     mData[j*A.row + i] = A.mData[i*A.column + j];
                 }
             }
+            return *this;
         }
+        private:
+            Matrix_t *mData;
 };
 #endif

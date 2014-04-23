@@ -3,6 +3,7 @@ ToolsLib
 FIFO:
     First In First Out类
     ReSize();   分配数据区域，以支持数组式定义,每个对象需要ReSize()
+    operator=();    重写赋值函数
     Clear();    清除FIFO
     Push();     插入元素
     Pop();      取出元素
@@ -20,9 +21,13 @@ Matrix:
     二维矩阵类
     ReSize();   分配数据区域，以支持数组式定义,每个对象需要ReSize()
     Set();      设置当前对象某个元素的值
-    Add();      两矩阵对象相加，结果存在当前对象
-    Mus();      两矩阵对象相减，结果存在当前对象
-    Mul();      两矩阵对象相乘，结果存在当前对象
+    Get();      获取当前对象某个元素的值
+    operator=();    重写赋值函数
+    operator+();    当前对象与另一对象相加，返回结果
+    operator-();    当前对象与另一对象相减，返回结果
+    operator*();    当前对象与另一对象相乘，返回结果
+    operator+=();    当前对象与另一对象相加，结果存储在当前对象
+    operator-=();    当前对象与另一对象相减，结果存储在当前对象
     Inv3x3();   对3*3的矩阵求逆
     Atr();      将矩阵倒置，即M*N => N*M
 PthreadEvent:

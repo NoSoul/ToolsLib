@@ -4,7 +4,7 @@ int main()
 {
     FIFO<int> C[100][10];
     FIFO<int> A;
-	FIFO<double> B;
+    FIFO<double> B;
     for(int i=0; i<100; ++i)
     {
         for(int j=0; j<10; ++j)
@@ -14,27 +14,31 @@ int main()
     }
     A.ReSize(10);
     B.ReSize(10);
-	A.Push(1);
+    A.Push(1);
     A.Push(2);
-	B.Push(0.3);
+    B.Push(0.3);
     B.Push(0.4);
-	printf("len: %d\n", A.GetLength());
-	printf("exist 1? %d\n", A.Exist(1));
-	printf("exist 3? %d\n", A.Exist(3));
-	printf("Tail: %d\n", A.Pop());
-	printf("empty? %d\n", A.Empty());
-	printf("len: %d\n", A.GetLength());
-	A.Clear();
-	printf("len: %d\n", A.GetLength());
-    
+    printf("len: %d\n", A.GetLength());
+    printf("exist 1? %d\n", A.Exist(1));
+    printf("exist 3? %d\n", A.Exist(3));
+    printf("Tail: %d\n", A.Pop());
+    printf("empty? %d\n", A.Empty());
+    printf("len: %d\n", A.GetLength());
+    A.Clear();
+    printf("len: %d\n", A.GetLength());
+
     printf("\n");
     printf("len: %d\n", B.GetLength());
-	printf("exist 0.2? %d\n", B.Exist(0.2));
-	printf("exist 0.3? %d\n", B.Exist(0.3));
-	printf("Tail: %lf\n", B.Pop());
-	printf("empty? %d\n", B.Empty());
-	printf("len: %d\n", B.GetLength());
-	B.Clear();
-	printf("len: %d\n", B.GetLength());
+    printf("exist 0.2? %d\n", B.Exist(0.2));
+    printf("exist 0.3? %d\n", B.Exist(0.3));
+    printf("Tail: %lf\n", B.Pop());
+    printf("empty? %d\n", B.Empty());
+    printf("len: %d\n", B.GetLength());
+    B.Clear();
+    printf("len: %d\n", B.GetLength());
+
+    C[0][0].Push(1);
+    A = C[0][0];
+    printf("len: %d\n", A.GetLength());
     return 0;
 }

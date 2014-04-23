@@ -6,7 +6,7 @@ void Show(Matrix<float> &A)
     {
         for(int j=0; j<A.column; ++j)
         {
-            printf("%f ", A.mData[i*A.column + j]);
+            printf("%f ", A.Get(i, j));
         }
         printf("\n");
     }
@@ -30,10 +30,25 @@ int main()
                     A[i][j].Set(r, c, 1);
                 }
             }
-            Show(A[i][j]);
-            printf("\n");
         }
-        printf("\n");
     }
+    A[0][0] = A[0][1] + A[0][2];
+    Show(A[0][0]);
+    A[0][0] = A[0][1] - A[0][2];
+    Show(A[0][0]);
+    D.Set(0, 0, 1);
+    B.Set(0, 0, 1);
+    A[0][0] = D*B;
+    Show(A[0][0]);
+
+    B.Set(0, 0, 10);
+    Show(B);
+    B = A[0][0];
+    Show(B);
+
+    D.ReSize(3, 2);
+    A[0][1] = B.Atr(D);
+    Show(B);
+    Show(A[0][1]);
     return 0;
 }
