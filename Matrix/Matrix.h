@@ -36,10 +36,14 @@ class Matrix
         }
         void Set(int i, int j, Matrix_t value)
         {
+            assert(i < row);
+            assert(j < column);
             mData[i*column + j] = value;
         }
         Matrix_t Get(int i, int j)
         {
+            assert(i < row);
+            assert(j < column);
             return mData[i*column + j];
         }
         Matrix &operator=(const Matrix &source)
@@ -102,6 +106,47 @@ class Matrix
             }
             return res;
         }
+        Matrix operator*(const float a)
+        {
+            Matrix res;
+            res.ReSize(row, column);
+            for(int i=0; i<row; ++i)
+            {
+                for(int j=0; j<column; ++j)
+                {
+                    int id = i*column + j;
+                    res.mData[id] = mData[id] * a;
+                }
+            }
+            return res;        
+        }
+        Matrix operator/(const float a)
+        {
+            Matrix res;
+            res.ReSize(row, column);
+            for(int i=0; i<row; ++i)
+            {
+                for(int j=0; j<column; ++j)
+                {
+                    int id = i*column + j;
+                    res.mData[id] = mData[id] / a;
+                }
+            }
+            return res;        
+        }
+        Matrix operator-()
+        {
+            Matrix res;
+            res.ReSize(row, column);
+            for(int i=0; i<row; ++i)
+            {
+                for(int j=0; j<column; ++j)
+                {
+                    res.mData[i*column + j] = -mData[i*column + j];
+                }
+            }
+            return res;
+        }
         Matrix &operator+=(const Matrix &A)
         {
             assert(A.row == row);
@@ -114,6 +159,7 @@ class Matrix
                     mData[id] += A.mData[id];
                 }
             }
+            return *this;
         }
         Matrix &operator-=(const Matrix &A)
         {
@@ -127,11 +173,32 @@ class Matrix
                     mData[id] -= A.mData[id];
                 }
             }
+            return *this;
         }
-        void Inv3x3()
+        Matrix Inv2x2()
+        {
+            assert(row == 2);
+            assert(column == 2);
+            Matrix res;
+            res.ReSize(row, column);
+            Matrix_t a, b, c, d, fa;
+            a = mData[0]; 
+            b = mData[1]; 
+            c = mData[2]; 
+            d = mData[3]; 
+            fa = a*d - b*c;
+            res.mData[0] = d / fa;
+            res.mData[1] = -b / fa;
+            res.mData[2] = -c / fa;
+            res.mData[3] = a / fa;
+            return res;
+        }
+        Matrix Inv3x3()
         {
             assert(row == 3);
             assert(column == 3);
+            Matrix res;
+            res.ReSize(row, column);
             Matrix_t a, b, c, d, e, f, g, h, i, fa;
             a = mData[0]; 
             b = mData[1]; 
@@ -143,34 +210,31 @@ class Matrix
             h = mData[7]; 
             i = mData[8]; 
             fa = (a * e * i) - (a * f * h) - (b * d * i) + (b * f * g) + (c * d * h) - (c * e * g);
-            mData[0] = (e*i - f*h) / fa;
-            mData[1] = (c*h - b*i) / fa;
-            mData[2] = (b*f - c*e) / fa;
-            mData[3] = (f*g - d*i) / fa;
-            mData[4] = (a*i - c*g) / fa;
-            mData[5] = (c*d - a*f) / fa;
-            mData[6] = (d*h - e*g) / fa;
-            mData[7] = (b*g - a*h) / fa;
-            mData[8] = (a*e - b*d) / fa;
+            res.mData[0] = (e*i - f*h) / fa;
+            res.mData[1] = (c*h - b*i) / fa;
+            res.mData[2] = (b*f - c*e) / fa;
+            res.mData[3] = (f*g - d*i) / fa;
+            res.mData[4] = (a*i - c*g) / fa;
+            res.mData[5] = (c*d - a*f) / fa;
+            res.mData[6] = (d*h - e*g) / fa;
+            res.mData[7] = (b*g - a*h) / fa;
+            res.mData[8] = (a*e - b*d) / fa;
+            return res;
         }
-        Matrix& Atr(const Matrix &A)
+        Matrix Atr()
         {
-            if(row*column != A.row*A.column)
+            Matrix res;
+            res.ReSize(column, row);
+            for(int i=0; i<row; ++i)
             {
-                ReSize(A.column, A.row);
-            }
-            row = A.column;
-            column = A.row;
-            for(int i=0; i<A.row; ++i)
-            {
-                for(int j=0; j<A.column; ++j)
+                for(int j=0; j<column; ++j)
                 {
-                    mData[j*A.row + i] = A.mData[i*A.column + j];
+                    res.mData[j*row + i] = mData[i*column + j];
                 }
             }
-            return *this;
+            return res;
         }
-        private:
-            Matrix_t *mData;
+    private:
+        Matrix_t *mData;
 };
 #endif

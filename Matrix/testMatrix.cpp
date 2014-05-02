@@ -47,7 +47,7 @@ int main()
     Show(B);
 
     D.ReSize(3, 2);
-    A[0][1] = B.Atr(D);
+    A[0][1] = D.Atr();
     Show(B);
     Show(A[0][1]);
     return 0;
