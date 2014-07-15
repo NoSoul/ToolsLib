@@ -1,5 +1,7 @@
 ToolsLib
 ========
+Complex
+    复数类，使用avx并行优化
 FIFO:
     First In First Out类
     ReSize();   分配数据区域，以支持数组式定义,每个对象需要ReSize()

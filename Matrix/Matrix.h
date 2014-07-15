@@ -94,6 +94,7 @@ class Matrix
             assert(column == A.row);
             Matrix res;
             res.ReSize(row, A.column);
+            memset(res.mData, 0, sizeof(Matrix_t)*row*A.column);
             for(int i=0; i<row; ++i)
             {
                 for(int k=0; k<column; ++k)
@@ -234,7 +235,7 @@ class Matrix
             }
             return res;
         }
-    private:
+    protected:
         Matrix_t *mData;
 };
 #endif
