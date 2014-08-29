@@ -1,5 +1,7 @@
 ToolsLib
 ========
+ColorBashLog
+    打印类,根据不同log等级,打印不同颜色
 Complex
     复数类，使用avx并行优化
 FIFO:
