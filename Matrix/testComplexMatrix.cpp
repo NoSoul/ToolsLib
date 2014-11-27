@@ -2,12 +2,12 @@
 
 void Show(ComplexMatrix &A)
 {
-    for(int i=0; i<A.row; ++i)
+    for(int i = 0; i < A.row; ++i)
     {
-        for(int j=0; j<A.column; ++j)
+        for(int j = 0; j < A.column; ++j)
         {
             //for(int k=0; k<PARALLEL_OP; ++k)
-            for(int k=0; k<1; ++k)
+            for(int k = 0; k < 1; ++k)
             {
                 printf("%f+%fj ", A.Get(i, j).mReal[k], A.Get(i, j).mImag[k]);
             }
@@ -31,7 +31,7 @@ int main()
     Show(C);
     float sum[PARALLEL_OP];
     A.ComplexNorm2(sum);
-    for(int i=0; i<PARALLEL_OP; ++i)
+    for(int i = 0; i < PARALLEL_OP; ++i)
     {
         printf("%f\n", sum[i]);
     }

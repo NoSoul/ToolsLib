@@ -2,14 +2,14 @@
 
 TCPSocket *TCPSocket::Socket_instance = NULL;
 
-TCPSocket::TCPSocket() 
+TCPSocket::TCPSocket()
 {
     connfd = -1;
     reconn = false;
     sigset_t set;
     sigprocmask(SIG_SETMASK, NULL, &set);
     sigaddset(&set, SIGPIPE);
-    sigprocmask(SIG_BLOCK, &set,NULL);
+    sigprocmask(SIG_BLOCK, &set, NULL);
 }
 
 TCPSocket::~TCPSocket()
@@ -30,7 +30,7 @@ void TCPSocket::InitialServer()
 {
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    int opt =1;
+    int opt = 1;
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     struct sockaddr_in servaddr;
@@ -61,7 +61,7 @@ void TCPSocket::InitialClient(const char *hostIP)
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     inet_pton(AF_INET, hostIP, &servaddr.sin_addr);
-    servaddr.sin_port = htons(Socket_SERV_PORT); 
+    servaddr.sin_port = htons(Socket_SERV_PORT);
 
     puts("Request connections ...");
     while(connect(connfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0);
@@ -88,7 +88,7 @@ int TCPSocket::TCPSocketWrite(const char *buffer, int size)
         int nwrite = send(connfd, buffer, len, TCPSocket_SEND_FLAG);
         if(nwrite <= 0)
         {
-            if(nwrite<0 && errno==EINTR)
+            if(nwrite < 0 && errno == EINTR)
             {
                 nwrite = 0;
             }
@@ -150,9 +150,9 @@ int TCPSocket::TCPSocketReadLine(char *buffer, int MaxReadLength)
         if(nread == 1)
         {
             buffer[len++] = data;
-            if(data=='\n' || data=='\r')
+            if(data == '\n' || data == '\r')
             {
-                break; 
+                break;
             }
             if(len == MaxReadLength)
             {

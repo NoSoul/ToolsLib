@@ -42,6 +42,8 @@ Matrix:
     Inv2x2();   对2*2的矩阵求逆
     Inv3x3();   对3*3的矩阵求逆
     Atr();      将矩阵倒置，即M*N => N*M
+OBPool
+    对象池模板类
 PthreadEvent:
     pthread系列的事件类
     Set();      触发某个指定事件

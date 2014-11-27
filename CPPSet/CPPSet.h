@@ -6,149 +6,149 @@
 template <typename KEY_t>
 class CPPSet
 {
-    private:
-        KEY_t *mKey;
-        unsigned int mCapacity;
-        unsigned int mSize;
-    public:
-        CPPSet()
+private:
+    KEY_t *mKey;
+    unsigned int mCapacity;
+    unsigned int mSize;
+public:
+    CPPSet()
+    {
+        mSize = 0;
+        mCapacity = 0;
+        mKey = NULL;
+    }
+    ~CPPSet()
+    {
+        if(mKey)
         {
-            mSize = 0;
-            mCapacity = 0;
-            mKey = NULL;
+            delete[] mKey;
         }
-        ~CPPSet()
+    }
+    unsigned int size()
+    {
+        return mSize;
+    }
+    void insert(const KEY_t& x)
+    {
+        if(find(x) == NULL)
         {
-            if(mKey)
+            if(mSize + 1 >= mCapacity)
             {
-                delete[] mKey;
-            }
-        }
-        unsigned int size()
-        {
-            return mSize;
-        }
-        void insert(const KEY_t& x)
-        {
-            if(find(x) == NULL)
-            {
-                if(mSize+1 >= mCapacity)
+                KEY_t *key_mem = new KEY_t[mCapacity + CPP_SET_ADD_VALUE];
+                int i;
+                for(i = 0; i < mSize; ++i)
                 {
-                    KEY_t *key_mem = new KEY_t[mCapacity+CPP_SET_ADD_VALUE];
-                    int i;
-                    for(i=0; i<mSize; ++i)
+                    if(mKey[i] < x)
                     {
-                        if(mKey[i] < x)
-                        {
-                            key_mem[i] = mKey[i];
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        key_mem[i] = mKey[i];
                     }
-                    key_mem[i] = x;
-                    for(; i<mSize; ++i)
+                    else
                     {
-                        key_mem[i+1] = mKey[i];
+                        break;
                     }
-                    ++mSize;
-                    if(mKey)
-                    {
-                        delete[] mKey;
-                    }
-                    mKey = key_mem;
-                    mCapacity += CPP_SET_ADD_VALUE;
                 }
-                else
+                key_mem[i] = x;
+                for(; i < mSize; ++i)
                 {
-                    int Left, Right, Mid;
-                    Left = 0;
-                    Right = mSize-1;
-                    while(Left < Right)
-                    {
-                        Mid = (Left+Right)>>1;
-                        if(mKey[Mid] < x)
-                        {
-                            Left = Mid+1;
-                        }
-                        else
-                        {
-                            Right = Mid;
-                        }
-                    }
-                    if(mKey[Left] < x)
-                    {
-                        ++Left;
-                    }
-                    char ktemp[sizeof(KEY_t)];
-                    memcpy(ktemp, &mKey[mSize], sizeof(KEY_t));
-                    memmove(mKey+Left+1, mKey+Left, (mSize-Left)*sizeof(KEY_t));
-                    memcpy(&mKey[Left], ktemp, sizeof(KEY_t));
-                    mKey[Left] = x;
-                    ++mSize;
+                    key_mem[i + 1] = mKey[i];
                 }
-            }
-        }
-        void erase(const KEY_t& x)
-        {
-            KEY_t *point = find(x);
-            if(point != NULL)
-            {
-                int idx = point-mKey;
-                char ktemp[sizeof(KEY_t)];
-                memcpy(ktemp, &mKey[idx], sizeof(KEY_t));
-                memmove(mKey+idx, mKey+idx+1, (mSize-1-idx)*sizeof(KEY_t));
-                memcpy(&mKey[mSize-1], ktemp, sizeof(KEY_t));
-                --mSize;
+                ++mSize;
+                if(mKey)
+                {
+                    delete[] mKey;
+                }
+                mKey = key_mem;
+                mCapacity += CPP_SET_ADD_VALUE;
             }
             else
             {
-                printf("CPPSet erase ERROR\n");
+                int Left, Right, Mid;
+                Left = 0;
+                Right = mSize - 1;
+                while(Left < Right)
+                {
+                    Mid = (Left + Right) >> 1;
+                    if(mKey[Mid] < x)
+                    {
+                        Left = Mid + 1;
+                    }
+                    else
+                    {
+                        Right = Mid;
+                    }
+                }
+                if(mKey[Left] < x)
+                {
+                    ++Left;
+                }
+                char ktemp[sizeof(KEY_t)];
+                memcpy(ktemp, &mKey[mSize], sizeof(KEY_t));
+                memmove(mKey + Left + 1, mKey + Left, (mSize - Left)*sizeof(KEY_t));
+                memcpy(&mKey[Left], ktemp, sizeof(KEY_t));
+                mKey[Left] = x;
+                ++mSize;
             }
         }
-        KEY_t* find(const KEY_t& x)
+    }
+    void erase(const KEY_t& x)
+    {
+        KEY_t *point = find(x);
+        if(point != NULL)
         {
-            if(mSize == 0)
-            {
-                return NULL;
-            }
-            int Left, Right, Mid;
-            Left = 0;
-            Right = mSize-1;
-            while(Left <= Right)
-            {
-                Mid = (Left+Right)>>1;
-                if(mKey[Mid] == x)
-                {
-                    return &mKey[Mid];
-                }
-                else if(mKey[Mid] < x)
-                {
-                    Left = Mid+1;
-                }
-                else
-                {
-                    Right = Mid-1;
-                }
-            }
+            int idx = point - mKey;
+            char ktemp[sizeof(KEY_t)];
+            memcpy(ktemp, &mKey[idx], sizeof(KEY_t));
+            memmove(mKey + idx, mKey + idx + 1, (mSize - 1 - idx)*sizeof(KEY_t));
+            memcpy(&mKey[mSize - 1], ktemp, sizeof(KEY_t));
+            --mSize;
+        }
+        else
+        {
+            printf("CPPSet erase ERROR\n");
+        }
+    }
+    KEY_t* find(const KEY_t& x)
+    {
+        if(mSize == 0)
+        {
             return NULL;
         }
-        KEY_t* begin()
+        int Left, Right, Mid;
+        Left = 0;
+        Right = mSize - 1;
+        while(Left <= Right)
         {
-            if(mSize == 0)
+            Mid = (Left + Right) >> 1;
+            if(mKey[Mid] == x)
             {
-                return NULL;
+                return &mKey[Mid];
             }
-            return mKey;
+            else if(mKey[Mid] < x)
+            {
+                Left = Mid + 1;
+            }
+            else
+            {
+                Right = Mid - 1;
+            }
         }
-        KEY_t* end()
+        return NULL;
+    }
+    KEY_t* begin()
+    {
+        if(mSize == 0)
         {
-            if(mSize == 0)
-            {
-                return NULL;
-            }
-            return &mKey[mSize-1];
+            return NULL;
         }
+        return mKey;
+    }
+    KEY_t* end()
+    {
+        if(mSize == 0)
+        {
+            return NULL;
+        }
+        return &mKey[mSize - 1];
+    }
 };
 #endif

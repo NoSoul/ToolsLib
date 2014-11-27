@@ -11,21 +11,21 @@
 #define Socket_SERV_PORT	7777
 class TCPSocket
 {
-    public:	
-        static TCPSocket *GetInstance();
-        void InitialServer();
-        void InitialClient(const char *);
-        void ReconnTCPSocket();
-        int  TCPSocketWrite(const char *, int );
-        int  TCPSocketRead(char *, int );
-        int  TCPSocketReadLine(char *, int );
-    private:
-        int listenfd;
-        int connfd;
-        bool reconn;
-        static TCPSocket *Socket_instance;
+public:
+    static TCPSocket *GetInstance();
+    void InitialServer();
+    void InitialClient(const char *);
+    void ReconnTCPSocket();
+    int  TCPSocketWrite(const char *, int );
+    int  TCPSocketRead(char *, int );
+    int  TCPSocketReadLine(char *, int );
+private:
+    int listenfd;
+    int connfd;
+    bool reconn;
+    static TCPSocket *Socket_instance;
 
-        TCPSocket();
-        virtual ~TCPSocket();
+    TCPSocket();
+    virtual ~TCPSocket();
 };
 #endif

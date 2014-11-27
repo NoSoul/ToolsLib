@@ -5,9 +5,9 @@ int main()
     FIFO<int> C[100][10];
     FIFO<int> A;
     FIFO<double> B;
-    for(int i=0; i<100; ++i)
+    for(int i = 0; i < 100; ++i)
     {
-        for(int j=0; j<10; ++j)
+        for(int j = 0; j < 10; ++j)
         {
             C[i][j].ReSize(3);
         }

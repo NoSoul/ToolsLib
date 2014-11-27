@@ -12,7 +12,7 @@
 #include <stdarg.h>
 typedef enum
 {
-    LOG_INFO=0,
+    LOG_INFO = 0,
     LOG_WARNING,
     LOG_DEBUG,
     LOG_ERROR,
@@ -20,15 +20,15 @@ typedef enum
 } e_LogType;
 class ColorLog
 {
-    private:
-        int color[5];
-        char Str[10000];
-        ColorLog();
-    public:
-        ~ColorLog();
-        static ColorLog *mHandle;
+private:
+    int color[5];
+    char Str[10000];
+    ColorLog();
+public:
+    ~ColorLog();
+    static ColorLog *mHandle;
 
-        int Msg(e_LogType , const char *, ...);
-        static ColorLog *GetIntance();
+    int Msg(e_LogType , const char *, ...);
+    static ColorLog *GetIntance();
 };
 #endif
