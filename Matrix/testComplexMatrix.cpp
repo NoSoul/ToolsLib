@@ -25,15 +25,7 @@ int main()
     A = A.ComplexEye(3);
     A.Set(0, 1, 0, 1, 1);
     Show(A);
-    B = A.ComplexConj();
-    Show(B);
-    C = A.ComplexConjAtr();
+    C.ConjAtrBy(A);
     Show(C);
-    float sum[PARALLEL_OP];
-    A.ComplexNorm2(sum);
-    for(int i = 0; i < PARALLEL_OP; ++i)
-    {
-        printf("%f\n", sum[i]);
-    }
     return 0;
 }

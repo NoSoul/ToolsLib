@@ -16,54 +16,42 @@ public:
         memcpy(mData, source.mData, sizeof(Complex8)*row * column);
         return *this;
     }
-    ComplexMatrix operator+(const ComplexMatrix &A)
+    void MulBy(const ComplexMatrix &A, const ComplexMatrix &B)
     {
-        assert(A.row == row);
-        assert(A.column == column);
-        ComplexMatrix res;
-        res.ReSize(row, column);
-        for(int i = 0; i < row; ++i)
+        assert(A.column == B.row);
+        if(row * column != A.row * B.column)
         {
-            for(int j = 0; j < column; ++j)
-            {
-                int id = i * column + j;
-                res.mData[id] = mData[id] + A.mData[id];
-            }
+            ReSize(A.row, B.column);
         }
-        return res;
-    }
-    ComplexMatrix operator*(const ComplexMatrix &A)
-    {
-        assert(column == A.row);
-        ComplexMatrix res;
-        res.ReSize(row, A.column);
-        memset(res.mData, 0, sizeof(Complex8)*row * A.column);
-        for(int i = 0; i < row; ++i)
+        memset(mData, 0, sizeof(Complex8)*A.row * B.column);
+        Complex8 temp;
+        for(int i = 0; i < A.row; ++i)
         {
-            for(int k = 0; k < column; ++k)
+            for(int k = 0; k < A.column; ++k)
             {
-                for(int j = 0; j < A.column; ++j)
+                for(int j = 0; j < B.column; ++j)
                 {
-                    Complex8 temp = mData[i * column + k] * A.mData[k * A.column + j];
-                    res.mData[i * A.column + j] += temp;
+                    temp = A.mData[i * A.column + k] *
+                           B.mData[k * B.column + j];
+                    mData[i * B.column + j] += temp;
                 }
             }
         }
-        return res;
     }
-    ComplexMatrix operator*(const float a)
+    void MulBy(const ComplexMatrix &source, const float a)
     {
-        ComplexMatrix res;
-        res.ReSize(row, column);
-        for(int i = 0; i < row; ++i)
+        if(row * column != source.row * source.column)
         {
-            for(int j = 0; j < column; ++j)
+            ReSize(source.row, source.column);
+        }
+        for(int i = 0; i < source.row; ++i)
+        {
+            for(int j = 0; j < source.column; ++j)
             {
                 int id = i * column + j;
-                res.mData[id] = mData[id] * a;
+                mData[id] = source.mData[id] * a;
             }
         }
-        return res;
     }
     void operator+=(const ComplexMatrix &A)
     {
@@ -90,60 +78,51 @@ public:
         assert(j < column);
         mData[i * column + j] = value;
     }
-    ComplexMatrix Inv1x1()
+    void Inv1x1By(const ComplexMatrix &source)
     {
-        assert(row == 1);
-        assert(column == 1);
-        ComplexMatrix res;
-        res.ReSize(row, column);
-        res.mData[0] = mData[0].Rcp();
-        return res;
+        assert(source.row == 1);
+        assert(source.column == 1);
+        if(row * column != 1)
+        {
+            ReSize(1, 1);
+        }
+        mData[0] = source.mData[0].Rcp();
     }
-    ComplexMatrix Inv2x2()
+    void Inv2x2By(const ComplexMatrix &source)
     {
-        assert(row == 2);
-        assert(column == 2);
-        ComplexMatrix res;
-        res.ReSize(row, column);
+        assert(source.row == 2);
+        assert(source.column == 2);
+        if(row * column != 4)
+        {
+            ReSize(2, 2);
+        }
         Complex8 a, b, c, d, fa, A, B;
-        a = mData[0];
-        b = mData[1];
-        c = mData[2];
-        d = mData[3];
+        a = source.mData[0];
+        b = source.mData[1];
+        c = source.mData[2];
+        d = source.mData[3];
         A = a * d;
         B = b * c;
         fa = A - B;
-        res.Set(0, 0, d / fa);
-        res.Set(0, 1, -b / fa);
-        res.Set(1, 0, -c / fa);
-        res.Set(1, 1, a / fa);
-        return res;
+        Set(0, 0, d / fa);
+        Set(0, 1, -b / fa);
+        Set(1, 0, -c / fa);
+        Set(1, 1, a / fa);
     }
-    ComplexMatrix ComplexConj()
+    void ConjAtrBy(const ComplexMatrix &source)
     {
-        ComplexMatrix res;
-        res.ReSize(row, column);
-        for(int i = 0; i < row; ++i)
+        if(row * column != source.row * source.column)
         {
-            for(int j = 0; j < column; ++j)
+            ReSize(source.column, source.row);
+        }
+        for(int i = 0; i < source.row; ++i)
+        {
+            for(int j = 0; j < source.column; ++j)
             {
-                res.mData[i * column + j] = mData[i * column + j].Conjugate();
+                mData[j * source.row + i] =
+                    source.mData[i * source.column + j].Conjugate();
             }
         }
-        return res;
-    }
-    ComplexMatrix ComplexConjAtr()
-    {
-        ComplexMatrix res;
-        res.ReSize(column, row);
-        for(int i = 0; i < row; ++i)
-        {
-            for(int j = 0; j < column; ++j)
-            {
-                res.mData[j * row + i] = mData[i * column + j].Conjugate();
-            }
-        }
-        return res;
     }
     ComplexMatrix ComplexEye(const int n)
     {
@@ -167,26 +146,6 @@ public:
             }
         }
         return res;
-    }
-    void ComplexNorm2(float *res)
-    {
-        float sum[PARALLEL_OP];
-        for(int i = 0; i < PARALLEL_OP; ++i)
-        {
-            res[i] = 0.0f;
-        }
-        __m256 avx_sum, avx_res;
-        avx_res = _mm256_loadu_ps(res);
-        for(int i = 0; i < row; ++i)
-        {
-            for(int j = 0; j < column; ++j)
-            {
-                mData[i * column + j].MagSqr(sum);
-                avx_sum = _mm256_loadu_ps(sum);
-                avx_res = _mm256_add_ps(avx_res, avx_sum);
-            }
-        }
-        _mm256_storeu_ps(res, avx_res);
     }
 };
 #endif

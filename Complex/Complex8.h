@@ -15,6 +15,12 @@ public:
         memcpy(mReal, real, sizeof(mReal));
         memcpy(mImag, imag, sizeof(mImag));
     }
+    Complex8 &operator=(const Complex8 &source)
+    {
+        memcpy(mReal, source.mReal, sizeof(mReal));
+        memcpy(mImag, source.mImag, sizeof(mImag));
+        return *this;
+    }
     float mReal[PARALLEL_OP];
     float mImag[PARALLEL_OP];
     void SetData(int id, float r, float i)
