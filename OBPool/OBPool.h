@@ -1,9 +1,10 @@
 #ifndef _OBPool_H_
 #define _OBPool_H_
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#define OB_POOL_ADD_VALUE   50
+#include <assert.h>
+#include <pthread.h>
+#define OB_POOL_ADD_BLOCK   3
 template <typename OB_t>
 class OBPool
 {
@@ -12,86 +13,125 @@ public:
     {
         m_Data = NULL;
         m_Flag = NULL;
-        m_Size = 0;
+        m_BlockSize = 0;
+        m_BlockNum = 0;
+        m_LastAllocIdx = 0;
+        m_Count = 0;
+        pthread_mutex_init(&m_Mutex, NULL);
     }
     ~OBPool()
     {
-        if (m_Data) {
-            delete []m_Data;
-            m_Data = NULL;
-        }
-        if (m_Flag) {
-            delete []m_Flag;
-            m_Flag = NULL;
-        }
-    }
-    void ReSize(const int size)
-    {
-        if(size <= m_Size)
-        {
-            puts("OBPool Segment Fault");
-            exit(0);
-        }
-        OB_t *data_mem = new OB_t[size];
-        bool *flag_mem = new bool[size];
-        memset(flag_mem, 0, sizeof(bool)*size);
-        if (m_Data) {
-            for(int i = 0; i < m_Size; ++i) {
-                data_mem[i] = m_Data[i];
+        for(int i = 0; i < m_BlockNum; ++i) {
+            if(m_Data[i]) {
+                delete[] m_Data[i];
             }
-            delete []m_Data;
-        }
-        if (m_Flag) {
-            memcpy(flag_mem, m_Flag, sizeof(bool)*m_Size);
-            delete []m_Flag;
-        }
-        m_Data = data_mem;
-        m_Flag = flag_mem;
-        m_Size = size;
-    }
-    int AllocOB()
-    {
-        for(int i = 0; i < m_Size; ++i) {
-            if(!m_Flag[i])
-            {
-                m_Flag[i] = true;
-                return i;
+            if(m_Flag[i]) {
+                delete[] m_Flag[i];
             }
         }
-        ReSize(m_Size + OB_POOL_ADD_VALUE);
-        m_Flag[m_Size - OB_POOL_ADD_VALUE] = true;
-        return m_Size - OB_POOL_ADD_VALUE;
-    }
-    void FreeOB(const int idx)
-    {
-        if(idx < 0 || idx >= m_Size)
-        {
-            return;
+        if(m_Data) {
+            delete[] m_Data;
         }
-        m_Flag[idx] = false;
-        m_Data[idx].Initialize();
-    }
-    OB_t& operator[](const int idx)
-    {
-        if(idx < 0 || idx >= m_Size)
-        {
-            puts("OBPool Segment Fault");
-            exit(0);
+        if(m_Flag) {
+            delete[] m_Flag;
         }
-        return m_Data[idx];
+        pthread_mutex_destroy(&m_Mutex);
     }
-    const OB_t& operator[](const int idx)const
+    void SetBlockSize(unsigned int blockSize)
     {
-        if(idx < 0 || idx >= m_Size)
-        {
-            puts("OBPool Segment Fault");
-            exit(0);
+        assert(m_BlockSize == 0);
+        m_BlockSize = blockSize;
+        m_Data = new OB_t*[OB_POOL_ADD_BLOCK];
+        m_Flag = new bool*[OB_POOL_ADD_BLOCK];
+        for(int i = 0; i < OB_POOL_ADD_BLOCK; ++i) {
+            m_Data[i] = new OB_t[m_BlockSize];
+            m_Flag[i] = new bool[m_BlockSize];
+            memset(m_Flag[i], 0, sizeof(bool)*m_BlockSize);
         }
-        return m_Data[idx];
+        m_LastAllocIdx = m_BlockNum * m_BlockSize;
+        m_BlockNum += OB_POOL_ADD_BLOCK;
+        m_Count = m_BlockSize * OB_POOL_ADD_BLOCK;
+    }
+    unsigned int AllocOB()
+    {
+        assert(m_BlockSize != 0);
+        pthread_mutex_lock(&m_Mutex);
+        if(m_Count == 0) {
+            Expand();
+        }
+        unsigned int x, y;
+        x = m_LastAllocIdx / m_BlockSize;
+        y = m_LastAllocIdx % m_BlockSize;
+        while(m_Flag[x][y]) {
+            ++m_LastAllocIdx;
+            m_LastAllocIdx %= m_BlockNum * m_BlockSize;
+            x = m_LastAllocIdx / m_BlockSize;
+            y = m_LastAllocIdx % m_BlockSize;
+        }
+        assert(!m_Flag[x][y]);
+        m_Flag[x][y] = true;
+        --m_Count;
+        unsigned int ret = m_LastAllocIdx;
+        pthread_mutex_unlock(&m_Mutex);
+        return ret;
+    }
+    void FreeOB(const unsigned int idx)
+    {
+        pthread_mutex_lock(&m_Mutex);
+        assert(idx < m_BlockSize * m_BlockNum);
+        assert(m_Flag[idx / m_BlockSize][idx % m_BlockSize]);
+        m_Flag[idx / m_BlockSize][idx % m_BlockSize] = false;
+        m_Data[idx / m_BlockSize][idx % m_BlockSize].Initialize();
+        ++m_Count;
+        pthread_mutex_unlock(&m_Mutex);
+    }
+    OB_t& operator[](const unsigned int idx)
+    {
+        assert(idx < m_BlockSize * m_BlockNum);
+        if(!m_Flag[idx / m_BlockSize][idx % m_BlockSize]) {
+            printf("OBPool LValue invald, return %u => 0\n", idx);
+            return m_Data[0][0];
+        }
+        return m_Data[idx / m_BlockSize][idx % m_BlockSize];
+    }
+    const OB_t& operator[](const unsigned int idx)const
+    {
+        assert(idx < m_BlockSize * m_BlockNum);
+        if(!m_Flag[idx / m_BlockSize][idx % m_BlockSize]) {
+            printf("OBPool RValue invald, return %u => 0\n", idx);
+            return m_Data[0][0];
+        }
+        return m_Data[idx / m_BlockSize][idx % m_BlockSize];
     }
 private:
-    OB_t *m_Data;
-    bool *m_Flag;
-    unsigned int m_Size;
+    OB_t **m_Data;
+    bool **m_Flag;
+    unsigned int m_BlockSize;
+    unsigned int m_BlockNum;
+    unsigned int m_LastAllocIdx;
+    unsigned int m_Count;
+    pthread_mutex_t m_Mutex;
+
+    void Expand()
+    {
+        OB_t **dataMem = new OB_t*[m_BlockNum + OB_POOL_ADD_BLOCK];
+        bool **flagMem = new bool*[m_BlockNum + OB_POOL_ADD_BLOCK];
+        memcpy(dataMem, m_Data, sizeof(OB_t*)*m_BlockNum);
+        memcpy(flagMem, m_Flag, sizeof(bool*)*m_BlockNum);
+        for(int i = 0; i < OB_POOL_ADD_BLOCK; ++i) {
+            dataMem[m_BlockNum + i] = new OB_t[m_BlockSize];
+            flagMem[m_BlockNum + i] = new bool[m_BlockSize];
+            memset(flagMem[m_BlockNum + i], 0, sizeof(bool)*m_BlockSize);
+        }
+        OB_t **delData = m_Data;
+        bool **delFlag = m_Flag;
+        m_Data = dataMem;
+        m_Flag = flagMem;
+        delete[] delData;
+        delete[] delFlag;
+        m_LastAllocIdx = m_BlockNum * m_BlockSize;
+        m_BlockNum += OB_POOL_ADD_BLOCK;
+        m_Count = m_BlockSize * OB_POOL_ADD_BLOCK;
+    }
 };
 #endif

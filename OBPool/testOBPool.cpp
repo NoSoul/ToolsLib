@@ -1,4 +1,6 @@
 #include "OBPool.h"
+#include <map>
+using namespace std;
 #define MAXN    20
 class A
 {
@@ -11,12 +13,6 @@ public:
     ~A()
     {
         delete[] mem;
-    }
-    A& operator=(const A &other)
-    {
-        num = other.num;
-        memcpy(mem, other.mem, sizeof(char) * 1024);
-        return *this;
     }
     void Initialize()
     {
@@ -38,34 +34,48 @@ public:
     A m_RM[MAXN];
 };
 
+OBPool<B> testPool;
+map<int, unsigned int> Map;
+pthread_mutex_t g_ProtectedMutex;
+
+void *Fun(void *arg)
+{
+    for(int i = 0; i < 1024 * 1024; ++i) {
+        int num = rand() % 50;
+        pthread_mutex_lock(&g_ProtectedMutex);
+        if(Map[num]) {
+            testPool.FreeOB(Map[num]);
+            Map[num] = 0;
+        } else {
+            Map[num] = testPool.AllocOB();
+        }
+        pthread_mutex_unlock(&g_ProtectedMutex);
+    }
+    return arg;
+}
+
 int main()
 {
-    OBPool<B> testPool;
-    testPool.ReSize(2);
-    int Len = 0;
-    int Idx[MAXN];
-    for(int i = 0; i < MAXN; ++i)
-    {
-        if(rand() % 3)
-        {
-            Idx[Len] = testPool.AllocOB();
-            for(int j = 0; j < MAXN; ++j)
-            {
-                testPool[Idx[Len]].m_RM[j].num = i;
-            }
-            printf("I'am %d %d\n", i, Idx[Len]);
-            ++Len;
-        }
+    pthread_mutex_init(&g_ProtectedMutex, NULL);
+    testPool.SetBlockSize(5);
+    unsigned int NULLIdx = testPool.AllocOB();
+    printf("%u\n", NULLIdx);
+    const int N = OB_POOL_ADD_BLOCK * 5 * 2 + 2;
+    unsigned int Idx[N];
+    for(int i = 0; i < N; ++i) {
+        Idx[i] = testPool.AllocOB();
     }
-    for(int i = 0; i < Len; ++i)
-    {
-        printf("%d\t", Idx[i]);
-        for(int j = 0; j < MAXN; ++j)
-        {
-            printf("%d ", testPool[Idx[i]].m_RM[j].num);
-        }
-        puts("");
+    for(int i = 0; i < N; ++i) {
         testPool.FreeOB(Idx[i]);
     }
+    const int test_threads = 4;
+    pthread_t Id[test_threads];
+    for(int i = 0; i < test_threads; ++i) {
+        pthread_create(&Id[i], NULL, Fun, NULL);
+    }
+    for(int i = 0; i < test_threads; ++i) {
+        pthread_join(Id[i], NULL);
+    }
+    pthread_mutex_destroy(&g_ProtectedMutex);
     return 0;
 }
