@@ -21,6 +21,9 @@ public:
     }
     ~OBPool()
     {
+        if(m_BlockSize) {
+            FreeOB(0);
+        }
         for(int i = 0; i < m_BlockNum; ++i) {
             if(m_Data[i]) {
                 delete[] m_Data[i];
@@ -51,6 +54,7 @@ public:
         m_LastAllocIdx = m_BlockNum * m_BlockSize;
         m_BlockNum += OB_POOL_ADD_BLOCK;
         m_Count = m_BlockSize * OB_POOL_ADD_BLOCK;
+        AllocOB();
     }
     unsigned int AllocOB()
     {
@@ -85,23 +89,14 @@ public:
         ++m_Count;
         pthread_mutex_unlock(&m_Mutex);
     }
-    OB_t& operator[](const unsigned int idx)
+    auto Get(const unsigned int idx)->decltype(OB_t::m_ForDeclGet)
     {
         assert(idx < m_BlockSize * m_BlockNum);
         if(!m_Flag[idx / m_BlockSize][idx % m_BlockSize]) {
-            printf("OBPool LValue invald, return %u => 0\n", idx);
-            return m_Data[0][0];
+            printf("OBPool Idx invald, return %u => 0\n", idx);
+            return m_Data[0][0].Get(0);
         }
-        return m_Data[idx / m_BlockSize][idx % m_BlockSize];
-    }
-    const OB_t& operator[](const unsigned int idx)const
-    {
-        assert(idx < m_BlockSize * m_BlockNum);
-        if(!m_Flag[idx / m_BlockSize][idx % m_BlockSize]) {
-            printf("OBPool RValue invald, return %u => 0\n", idx);
-            return m_Data[0][0];
-        }
-        return m_Data[idx / m_BlockSize][idx % m_BlockSize];
+        return m_Data[idx / m_BlockSize][0].Get(idx % m_BlockSize);
     }
 private:
     OB_t **m_Data;
