@@ -1,7 +1,5 @@
 #include "TCPSocket.h"
 
-TCPSocket *TCPSocket::Socket_instance = NULL;
-
 TCPSocket::TCPSocket()
 {
     connfd = -1;
@@ -19,11 +17,8 @@ TCPSocket::~TCPSocket()
 
 TCPSocket* TCPSocket::GetInstance()
 {
-    if(Socket_instance == NULL)
-    {
-        Socket_instance = new TCPSocket();
-    }
-    return Socket_instance;
+    static TCPSocket socketInstance;
+    return (&socketInstance);
 }
 
 void TCPSocket::InitialServer()

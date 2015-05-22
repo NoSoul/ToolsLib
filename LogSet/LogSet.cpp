@@ -32,7 +32,6 @@ void LogType::SetBoth(bool newscrn, bool newfile)
     logtofile = newfile;
 }
 
-LogSet *LogSet::handle = NULL;
 LogSet *LogCenter = LogSet::GetInstance();
 
 LogSet::LogSet()
@@ -41,9 +40,6 @@ LogSet::LogSet()
 
 LogSet *LogSet::GetInstance()
 {
-    if(handle == NULL)
-    {
-        handle = new LogSet();
-    }
-    return handle;
+    static LogSet handle;
+    return (&handle);
 }

@@ -19,7 +19,6 @@ class LogSet
 {
 private:
     LogSet();
-    static LogSet *handle;
 public:
     static LogSet *GetInstance();
 

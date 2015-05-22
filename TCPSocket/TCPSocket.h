@@ -23,7 +23,6 @@ private:
     int listenfd;
     int connfd;
     bool reconn;
-    static TCPSocket *Socket_instance;
 
     TCPSocket();
     virtual ~TCPSocket();
