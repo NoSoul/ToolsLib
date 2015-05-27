@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef int PrimaryType_t;
 typedef struct {
-    int mPrimaryVal;
+    PrimaryType_t mPrimaryVal;
 } RBData_t;
 
 typedef enum {
@@ -30,7 +31,7 @@ void Show(struct RBNode_t *node)
 
 void RBTreeInitialize(RBTree_t *tree)
 {
-    tree->mTreeRoot = &(tree->mSentinelLeaf);
+    tree->mTreeRoot = &tree->mSentinelLeaf;
     tree->mSentinelLeaf.mColor = RB_BLACK;
 }
 
@@ -54,7 +55,7 @@ void RBTreePostorderFree(struct RBNode_t *node, struct RBNode_t *stop)
 
 void RBTreeDestroy(RBTree_t *tree)
 {
-    RBTreePostorderFree(tree->mTreeRoot, &(tree->mSentinelLeaf));
+    RBTreePostorderFree(tree->mTreeRoot, &tree->mSentinelLeaf);
     RBTreeInitialize(tree);
 }
 
@@ -122,11 +123,11 @@ void RBTreeLeftRotate(RBTree_t *tree, struct RBNode_t *node)
 {
     struct RBNode_t *y = node->mRight;
     node->mRight = y->mLeft;
-    if(y->mLeft != &(tree->mSentinelLeaf)) {
+    if(y->mLeft != &tree->mSentinelLeaf) {
         y->mLeft->mParent = node;
     }
     y->mParent = node->mParent;
-    if(node->mParent == &(tree->mSentinelLeaf)) {
+    if(node->mParent == &tree->mSentinelLeaf) {
         tree->mTreeRoot = y;
     } else if(node == node->mParent->mLeft) {
         node->mParent->mLeft = y;
@@ -141,11 +142,11 @@ void RBTreeRightRotate(RBTree_t *tree, struct RBNode_t *node)
 {
     struct RBNode_t *y = node->mLeft;
     node->mLeft = y->mRight;
-    if(y->mRight != &(tree->mSentinelLeaf)) {
+    if(y->mRight != &tree->mSentinelLeaf) {
         y->mRight->mParent = node;
     }
     y->mParent = node->mParent;
-    if(node->mParent == &(tree->mSentinelLeaf)) {
+    if(node->mParent == &tree->mSentinelLeaf) {
         tree->mTreeRoot = y;
     } else if(node == node->mParent->mLeft) {
         node->mParent->mLeft = y;
@@ -192,9 +193,9 @@ void RBTreeInsertFixup(RBTree_t *tree, struct RBNode_t *node)
 
 void RBTreeInsert(RBTree_t *tree, struct RBNode_t *node)
 {
-    struct RBNode_t *y = &(tree->mSentinelLeaf);
+    struct RBNode_t *y = &tree->mSentinelLeaf;
     struct RBNode_t *x = tree->mTreeRoot;
-    while(x != &(tree->mSentinelLeaf)) {
+    while(x != &tree->mSentinelLeaf) {
         y = x;
         if(node->mKey.mPrimaryVal < x->mKey.mPrimaryVal) {
             x = x->mLeft;
@@ -203,22 +204,22 @@ void RBTreeInsert(RBTree_t *tree, struct RBNode_t *node)
         }
     }
     node->mParent = y;
-    if(y == &(tree->mSentinelLeaf)) {
+    if(y == &tree->mSentinelLeaf) {
         tree->mTreeRoot = node;
     } else if(node->mKey.mPrimaryVal < y->mKey.mPrimaryVal) {
         y->mLeft = node;
     } else {
         y->mRight = node;
     }
-    node->mLeft = &(tree->mSentinelLeaf);
-    node->mRight = &(tree->mSentinelLeaf);
+    node->mLeft = &tree->mSentinelLeaf;
+    node->mRight = &tree->mSentinelLeaf;
     node->mColor = RB_RED;
     RBTreeInsertFixup(tree, node);
 }
 
 void RBTreeTransplant(RBTree_t *tree, struct RBNode_t *u, struct RBNode_t *v)
 {
-    if(u->mParent == &(tree->mSentinelLeaf)) {
+    if(u->mParent == &tree->mSentinelLeaf) {
         tree->mTreeRoot = v;
     } else if(u == u->mParent->mLeft) {
         u->mParent->mLeft = v;
@@ -290,14 +291,14 @@ void RBTreeDelete(RBTree_t *tree, struct RBNode_t *node)
     struct RBNode_t *y = node;
     struct RBNode_t *x;
     RBColor_t origincolor = y->mColor;
-    if(node->mLeft == &(tree->mSentinelLeaf)) {
+    if(node->mLeft == &tree->mSentinelLeaf) {
         x = node->mRight;
         RBTreeTransplant(tree, node, node->mRight);
-    } else if(node->mRight == &(tree->mSentinelLeaf)) {
+    } else if(node->mRight == &tree->mSentinelLeaf) {
         x = node->mLeft;
         RBTreeTransplant(tree, node, node->mLeft);
     } else {
-        y = RBTreeMinimum(node->mRight, &(tree->mSentinelLeaf));
+        y = RBTreeMinimum(node->mRight, &tree->mSentinelLeaf);
         origincolor = y->mColor;
         x = y->mRight;
         if(y->mParent == node) {
@@ -315,5 +316,25 @@ void RBTreeDelete(RBTree_t *tree, struct RBNode_t *node)
     if(origincolor == RB_BLACK) {
         RBTreeDeleteFixup(tree, x);
     }
+}
+
+void RBTreeAdd(RBTree_t *tree, PrimaryType_t num)
+{
+    struct RBNode_t *node = (struct RBNode_t *)malloc(sizeof(struct RBNode_t));
+    node->mKey.mPrimaryVal = num;
+    RBTreeInsert(tree, node);
+}
+
+void RBTreeDel(RBTree_t *tree, PrimaryType_t num)
+{
+    RBData_t check;
+    check.mPrimaryVal = num;
+    struct RBNode_t *node = RBTreeSearch(tree->mTreeRoot, &check, &tree->mSentinelLeaf);
+    if(node == &tree->mSentinelLeaf) {
+        puts("Error");
+        return;
+    }
+    RBTreeDelete(tree, node);
+    free(node);
 }
 #endif

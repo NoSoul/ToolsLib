@@ -8,9 +8,11 @@ template <typename FIFOType_t>
 class FIFOStd
 {
 public:
+    FIFOType_t *mWritePtr;
     FIFOStd()
     {
         mData = NULL;
+        mWritePtr = NULL;
         mReadPos = 0;
         mWritePos = 0;
         mSize = 0;
@@ -28,7 +30,6 @@ public:
         for(i = 1; i < 32; ++i) {
             if(size == (1 << i)) {
                 break;
-
             }
         }
         if(i == 32) {
@@ -40,26 +41,32 @@ public:
         assert(mData);
         mReadPos = 0;
         mWritePos = 0;
+        mWritePtr = &mData[mWritePos];
         mSize = size;
     }
     void Clear()
     {
         mReadPos = 0;
         mWritePos = 0;
+        if(mData == NULL) {
+            mWritePtr = NULL;
+        } else {
+            mWritePtr = &mData[mWritePos];
+        }
     }
-    void Push(const FIFOType_t& value)
+    void Push()
     {
         unsigned int newWritePos = (mWritePos + 1) & (mSize - 1);
         if(newWritePos == mReadPos) {
             puts("FIFOStd Full!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             exit(0);
         }
-        mData[mWritePos] = value;
         mWritePos = newWritePos;
+        mWritePtr = &mData[mWritePos];
     }
-    FIFOType_t Pop()
+    FIFOType_t *Pop()
     {
-        FIFOType_t result = mData[mReadPos];
+        FIFOType_t *result = &mData[mReadPos];
         mReadPos = (mReadPos + 1) & (mSize - 1);
         return result;
     }

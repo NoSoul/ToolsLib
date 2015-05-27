@@ -14,22 +14,16 @@ int main()
             num = rand() % N;
         } while(Flag[num]);
         Flag[num] = true;
-        struct RBNode_t *node = (struct RBNode_t *)malloc(sizeof(struct RBNode_t));
-        node->mKey.mPrimaryVal = num;
-        RBTreeInsert(&Tree, node);
+        RBTreeAdd(&Tree, num);
     }
-    //RBTreeInorder(Tree.mTreeRoot, &(Tree.mSentinelLeaf));
+    //RBTreeInorder(Tree.mTreeRoot, &Tree.mSentinelLeaf);
     for(int i = 0; i < N - 10; ++i) {
         int num;
         do {
             num = rand() % N;
         } while(!Flag[num]);
         Flag[num] = false;
-        RBData_t key;
-        key.mPrimaryVal = num;
-        struct RBNode_t *node = RBTreeSearch(Tree.mTreeRoot, &key, &(Tree.mSentinelLeaf));
-        RBTreeDelete(&Tree, node);
-        free(node);
+        RBTreeDel(&Tree, num);
     }
     RBTreeDestroy(&Tree);
     return 0;
