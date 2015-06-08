@@ -29,5 +29,8 @@
 ### RedBlackTree
 * 红黑树
 
+### RMQ
+* ST RMQ算法
+
 ### TCPSocket
 * TCP连接，支持一对一重连
