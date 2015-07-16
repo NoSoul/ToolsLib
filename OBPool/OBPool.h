@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 #include <pthread.h>
-#define OB_POOL_ADD_BLOCK   3
+#define OB_POOL_ADD_BLOCK   1
 template <typename OB_t>
 class OBPool
 {
@@ -54,7 +54,6 @@ public:
         m_LastAllocIdx = m_BlockNum * m_BlockSize;
         m_BlockNum += OB_POOL_ADD_BLOCK;
         m_Count = m_BlockSize * OB_POOL_ADD_BLOCK;
-        AllocOB();
     }
     unsigned int AllocOB()
     {
@@ -85,7 +84,6 @@ public:
         assert(idx < m_BlockSize * m_BlockNum);
         assert(m_Flag[idx / m_BlockSize][idx % m_BlockSize]);
         m_Flag[idx / m_BlockSize][idx % m_BlockSize] = false;
-        m_Data[idx / m_BlockSize][idx % m_BlockSize].Initialize();
         ++m_Count;
         pthread_mutex_unlock(&m_Mutex);
     }
@@ -93,8 +91,9 @@ public:
     {
         assert(idx < m_BlockSize * m_BlockNum);
         if(!m_Flag[idx / m_BlockSize][idx % m_BlockSize]) {
-            printf("OBPool Idx invald, return %u => 0\n", idx);
-            return m_Data[0][0].Get(0);
+            printf("OBPool Idx %u invald\n", idx);
+            int code = idx / m_Flag[idx / m_BlockSize][idx % m_BlockSize];
+            exit(code);
         }
         return m_Data[idx / m_BlockSize][0].Get(idx % m_BlockSize);
     }

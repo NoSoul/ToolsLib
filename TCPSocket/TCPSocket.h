@@ -14,11 +14,11 @@ class TCPSocket
 public:
     static TCPSocket *GetInstance();
     void InitialServer();
-    void InitialClient(const char *);
+    void InitialClient(const char*);
     void ReconnTCPSocket();
-    int  TCPSocketWrite(const char *, int );
-    int  TCPSocketRead(char *, int );
-    int  TCPSocketReadLine(char *, int );
+    int  TCPSocketWrite(const char*, int);
+    int  TCPSocketRead(char*, int);
+    int  TCPSocketReadLine(char*, int);
 private:
     int listenfd;
     int connfd;

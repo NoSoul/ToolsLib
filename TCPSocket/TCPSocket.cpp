@@ -65,8 +65,7 @@ void TCPSocket::InitialClient(const char *hostIP)
 
 void TCPSocket::ReconnTCPSocket()
 {
-    if(reconn == false)
-    {
+    if(reconn == false) {
         reconn = true;
         shutdown(connfd, SHUT_RDWR);
         shutdown(listenfd, SHUT_RDWR);
@@ -78,17 +77,12 @@ void TCPSocket::ReconnTCPSocket()
 int TCPSocket::TCPSocketWrite(const char *buffer, int size)
 {
     int len = size;
-    while(len > 0)
-    {
+    while(len > 0) {
         int nwrite = send(connfd, buffer, len, TCPSocket_SEND_FLAG);
-        if(nwrite <= 0)
-        {
-            if(nwrite < 0 && errno == EINTR)
-            {
+        if(nwrite <= 0) {
+            if(nwrite < 0 && errno == EINTR) {
                 nwrite = 0;
-            }
-            else
-            {
+            } else {
                 puts("TCPSocket Send Error!");
                 return  -1;
             }
@@ -102,17 +96,12 @@ int TCPSocket::TCPSocketWrite(const char *buffer, int size)
 int TCPSocket::TCPSocketRead(char *buffer, int size)
 {
     int len = size;
-    while(len > 0)
-    {
+    while(len > 0) {
         int nread = recv(connfd, buffer, len, TCPSocket_RECV_FLAG);
-        if(nread < 0)
-        {
-            if(errno == EINTR)
-            {
+        if(nread < 0) {
+            if(errno == EINTR) {
                 nread = 0;
-            }
-            else
-            {
+            } else {
                 puts("TCPSocket Recv Error!");
                 return -1;
             }
@@ -127,30 +116,22 @@ int TCPSocket::TCPSocketReadLine(char *buffer, int MaxReadLength)
 {
     int len = 0;
     char data;
-    while(1)
-    {
+    while(1) {
         int nread = recv(connfd, &data, 1, TCPSocket_RECV_FLAG);
-        if(nread < 0)
-        {
-            if(errno == EINTR)
-            {
+        if(nread < 0) {
+            if(errno == EINTR) {
                 nread = 0;
-            }
-            else
-            {
+            } else {
                 puts("TCPSocket RecvLine Error!");
                 return -1;
             }
         }
-        if(nread == 1)
-        {
+        if(nread == 1) {
             buffer[len++] = data;
-            if(data == '\n' || data == '\r')
-            {
+            if(data == '\n' || data == '\r') {
                 break;
             }
-            if(len == MaxReadLength)
-            {
+            if(len == MaxReadLength) {
                 puts("TCPSocket RecvLine OverFlow, Skip Data!");
                 return -1;
             }
