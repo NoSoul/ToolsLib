@@ -80,7 +80,7 @@ pthread_mutex_t g_ProtectedMutex;
 
 void *Fun(void *arg)
 {
-    for(int i = 0; i < 1024 * 1024; ++i) {
+    for(int i = 0; i < 1024; ++i) {
         int num = rand() % 50;
         pthread_mutex_lock(&g_ProtectedMutex);
         if(Map[num]) {
@@ -97,8 +97,8 @@ void *Fun(void *arg)
 int main()
 {
     pthread_mutex_init(&g_ProtectedMutex, NULL);
-    testPoolX.SetBlockSize(5);
-    testPoolY.SetBlockSize(100);
+    testPoolX.SetBlockSize(8);
+    testPoolY.SetBlockSize(128);
     unsigned int NULLIdx = testPoolX.AllocOB();
     printf("%u\n", NULLIdx);
     const int N = OB_POOL_ADD_BLOCK * 5 * 2 + 2;

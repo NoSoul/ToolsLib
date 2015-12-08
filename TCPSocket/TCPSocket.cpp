@@ -1,9 +1,11 @@
 #include "TCPSocket.h"
 
-TCPSocket::TCPSocket()
+TCPSocket::TCPSocket(unsigned short port)
 {
-    connfd = -1;
-    reconn = false;
+    m_Port = port;
+    m_ListenFd = -1;
+    m_ConnFd = -1;
+    m_Reconn = false;
     sigset_t set;
     sigprocmask(SIG_SETMASK, NULL, &set);
     sigaddset(&set, SIGPIPE);
@@ -12,65 +14,59 @@ TCPSocket::TCPSocket()
 
 TCPSocket::~TCPSocket()
 {
-    shutdown(connfd, SHUT_RDWR);
-}
-
-TCPSocket* TCPSocket::GetInstance()
-{
-    static TCPSocket socketInstance;
-    return (&socketInstance);
+    shutdown(m_ConnFd, SHUT_RDWR);
 }
 
 void TCPSocket::InitialServer()
 {
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    m_ListenFd = socket(AF_INET, SOCK_STREAM, 0);
 
     int opt = 1;
-    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(m_ListenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     struct sockaddr_in servaddr;
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(Socket_SERV_PORT);
+    servaddr.sin_port = htons(m_Port);
 
-    bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    bind(m_ListenFd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-    listen(listenfd, 20);
+    listen(m_ListenFd, 20);
 
     struct sockaddr_in cliaddr;
-    socklen_t cliaddr_len = sizeof(cliaddr);
+    socklen_t cliaddrLen = sizeof(cliaddr);
     puts("Accepting connections ...");
-    connfd = accept(listenfd, (struct sockaddr *)&cliaddr, &cliaddr_len);
+    m_ConnFd = accept(m_ListenFd, (struct sockaddr *)&cliaddr, &cliaddrLen);
     puts("Connected!");
 }
 
 void TCPSocket::InitialClient(const char *hostIP)
 {
-    connfd = socket(AF_INET, SOCK_STREAM, 0);
+    m_ConnFd = socket(AF_INET, SOCK_STREAM, 0);
 
     int opt = 1;
-    setsockopt(connfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    setsockopt(m_ConnFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     struct sockaddr_in servaddr;
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     inet_pton(AF_INET, hostIP, &servaddr.sin_addr);
-    servaddr.sin_port = htons(Socket_SERV_PORT);
+    servaddr.sin_port = htons(m_Port);
 
     puts("Request connections ...");
-    while(connect(connfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0);
+    while(connect(m_ConnFd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0);
     puts("Connected!");
 }
 
 void TCPSocket::ReconnTCPSocket()
 {
-    if(reconn == false) {
-        reconn = true;
-        shutdown(connfd, SHUT_RDWR);
-        shutdown(listenfd, SHUT_RDWR);
+    if(m_Reconn == false) {
+        m_Reconn = true;
+        shutdown(m_ConnFd, SHUT_RDWR);
+        shutdown(m_ListenFd, SHUT_RDWR);
         InitialServer();
-        reconn = false;
+        m_Reconn = false;
     }
 }
 
@@ -78,7 +74,7 @@ int TCPSocket::TCPSocketWrite(const char *buffer, int size)
 {
     int len = size;
     while(len > 0) {
-        int nwrite = send(connfd, buffer, len, TCPSocket_SEND_FLAG);
+        int nwrite = send(m_ConnFd, buffer, len, TCPSocket_SEND_FLAG);
         if(nwrite <= 0) {
             if(nwrite < 0 && errno == EINTR) {
                 nwrite = 0;
@@ -97,7 +93,7 @@ int TCPSocket::TCPSocketRead(char *buffer, int size)
 {
     int len = size;
     while(len > 0) {
-        int nread = recv(connfd, buffer, len, TCPSocket_RECV_FLAG);
+        int nread = recv(m_ConnFd, buffer, len, TCPSocket_RECV_FLAG);
         if(nread < 0) {
             if(errno == EINTR) {
                 nread = 0;
@@ -117,7 +113,7 @@ int TCPSocket::TCPSocketReadLine(char *buffer, int MaxReadLength)
     int len = 0;
     char data;
     while(1) {
-        int nread = recv(connfd, &data, 1, TCPSocket_RECV_FLAG);
+        int nread = recv(m_ConnFd, &data, 1, TCPSocket_RECV_FLAG);
         if(nread < 0) {
             if(errno == EINTR) {
                 nread = 0;

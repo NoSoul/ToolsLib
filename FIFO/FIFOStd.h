@@ -2,33 +2,31 @@
 #define _FIFOStd_H_
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 template <typename FIFOType_t>
 class FIFOStd
 {
 public:
-    FIFOType_t *mWritePtr;
+    FIFOType_t *m_WritePtr;
     FIFOStd()
     {
-        mData = NULL;
-        mWritePtr = NULL;
-        mReadPos = 0;
-        mWritePos = 0;
-        mSize = 0;
+        m_Data = NULL;
+        m_WritePtr = NULL;
+        m_ReadPos = 0;
+        m_WritePos = 0;
+        m_Size = 0;
     }
     ~FIFOStd()
     {
-        if(mData) {
-            delete[] mData;
-            mData = NULL;
+        if(m_Data) {
+            delete[] m_Data;
+            m_Data = NULL;
         }
     }
     void ReSize(const unsigned int size)
     {
         int i;
         for(i = 1; i < 32; ++i) {
-            if(size == (1 << i)) {
+            if(size == (1u << i)) {
                 break;
             }
         }
@@ -36,48 +34,54 @@ public:
             puts("The size of FIFOStd is not 2^N or too big");
             exit(0);
         }
-        assert(mData == NULL);
-        mData = new FIFOType_t[size];
-        assert(mData);
-        mReadPos = 0;
-        mWritePos = 0;
-        mWritePtr = &mData[mWritePos];
-        mSize = size;
+        if(m_Data != NULL) {
+            puts("double ReSize");
+            exit(0);
+        }
+        m_Data = new FIFOType_t[size];
+        if(m_Data == NULL) {
+            puts("bad alloc");
+            exit(0);
+        }
+        m_ReadPos = 0;
+        m_WritePos = 0;
+        m_WritePtr = &m_Data[m_WritePos];
+        m_Size = size;
     }
     void Clear()
     {
-        mReadPos = 0;
-        mWritePos = 0;
-        if(mData == NULL) {
-            mWritePtr = NULL;
+        m_ReadPos = 0;
+        m_WritePos = 0;
+        if(m_Data == NULL) {
+            m_WritePtr = NULL;
         } else {
-            mWritePtr = &mData[mWritePos];
+            m_WritePtr = &m_Data[m_WritePos];
         }
     }
-    void Push()
+    bool Push()
     {
-        unsigned int newWritePos = (mWritePos + 1) & (mSize - 1);
-        if(newWritePos == mReadPos) {
-            puts("FIFOStd Full!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            exit(0);
+        unsigned int newWritePos = (m_WritePos + 1) & (m_Size - 1);
+        if(newWritePos == ((m_ReadPos - 1) & (m_Size - 1))) {
+            return false;
         }
-        mWritePos = newWritePos;
-        mWritePtr = &mData[mWritePos];
+        m_WritePos = newWritePos;
+        m_WritePtr = &m_Data[m_WritePos];
+        return true;
     }
     FIFOType_t *Pop()
     {
-        FIFOType_t *result = &mData[mReadPos];
-        mReadPos = (mReadPos + 1) & (mSize - 1);
+        FIFOType_t *result = &m_Data[m_ReadPos];
+        m_ReadPos = (m_ReadPos + 1) & (m_Size - 1);
         return result;
     }
     unsigned int GetLength()
     {
-        return (mWritePos + mSize - mReadPos) & (mSize - 1);
+        return (m_WritePos + m_Size - m_ReadPos) & (m_Size - 1);
     }
 protected:
-    FIFOType_t *mData;
-    unsigned int mReadPos;
-    unsigned int mWritePos;
-    unsigned int mSize;
+    FIFOType_t *m_Data;
+    unsigned int m_ReadPos;
+    unsigned int m_WritePos;
+    unsigned int m_Size;
 };
 #endif

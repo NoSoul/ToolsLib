@@ -8,11 +8,11 @@
 #include <signal.h>
 #define TCPSocket_RECV_FLAG 0
 #define TCPSocket_SEND_FLAG 0
-#define Socket_SERV_PORT	7777
 class TCPSocket
 {
 public:
-    static TCPSocket *GetInstance();
+    TCPSocket(unsigned short);
+    virtual ~TCPSocket();
     void InitialServer();
     void InitialClient(const char*);
     void ReconnTCPSocket();
@@ -20,11 +20,9 @@ public:
     int  TCPSocketRead(char*, int);
     int  TCPSocketReadLine(char*, int);
 private:
-    int listenfd;
-    int connfd;
-    bool reconn;
-
-    TCPSocket();
-    virtual ~TCPSocket();
+    unsigned short m_Port;
+    int m_ListenFd;
+    int m_ConnFd;
+    bool m_Reconn;
 };
 #endif
