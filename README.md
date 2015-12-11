@@ -17,5 +17,8 @@
 ### RMQ
 * ST RMQ算法
 
+### SlideWin
+* 常用滑动窗
+
 ### TCPSocket
 * TCP连接，支持一对一重连
