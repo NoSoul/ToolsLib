@@ -138,6 +138,18 @@ public:
         }
         return &m_Data[retIdx];
     }
+    bool Exist(const SlideWinType_t& value)
+    {
+        for(int curr = m_ReadPos, i = 0; i < m_Count; ++i) {
+            if(m_Data[curr] == value) {
+                return true;
+            }
+            if(++curr == m_Size) {
+                curr = 0;
+            }
+        }
+        return false;
+    }
 private:
     SlideWinType_t *m_Data;
     int m_ReadPos;

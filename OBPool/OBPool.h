@@ -102,10 +102,10 @@ public:
     auto Get(const unsigned int idx)->decltype(OB_t::m_ForDeclGet)
     {
         if(!m_Flag[idx >> m_BitShift][idx & m_FastModLen]) {
-            printf("OBPool Idx %u invald\n", idx);
+            printf("OBPool Idx %u invalid\n", idx);
             quick_exit(0);
         }
-        return m_Data[idx / m_BlockSize][0].Get(idx % m_BlockSize);
+        return m_Data[idx >> m_BitShift][0].Get(idx & m_FastModLen);
     }
 private:
     OB_t **m_Data;
