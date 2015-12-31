@@ -1,13 +1,14 @@
 #ifndef _TCPSocket_H_
 #define _TCPSocket_H_
-#include <stdio.h>
-#include <string.h>
 #include <arpa/inet.h>
-#include <unistd.h>
 #include <errno.h>
 #include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #define TCPSocket_RECV_FLAG 0
 #define TCPSocket_SEND_FLAG 0
+#define TCPSocket_ERROR_MSG 0
 class TCPSocket
 {
 public:

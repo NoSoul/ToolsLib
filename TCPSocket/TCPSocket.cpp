@@ -25,7 +25,7 @@ void TCPSocket::InitialServer()
     setsockopt(m_ListenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     struct sockaddr_in servaddr;
-    bzero(&servaddr, sizeof(servaddr));
+    memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(m_Port);
@@ -49,13 +49,15 @@ void TCPSocket::InitialClient(const char *hostIP)
     setsockopt(m_ConnFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     struct sockaddr_in servaddr;
-    bzero(&servaddr, sizeof(servaddr));
+    memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     inet_pton(AF_INET, hostIP, &servaddr.sin_addr);
     servaddr.sin_port = htons(m_Port);
 
     puts("Request connections ...");
-    while(connect(m_ConnFd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0);
+    while(connect(m_ConnFd, (struct sockaddr*)&servaddr, sizeof(servaddr)) != 0) {
+        usleep(1000);
+    }
     puts("Connected!");
 }
 
@@ -75,11 +77,13 @@ int TCPSocket::TCPSocketWrite(const char *buffer, int size)
     int len = size;
     while(len > 0) {
         int nwrite = send(m_ConnFd, buffer, len, TCPSocket_SEND_FLAG);
-        if(nwrite <= 0) {
-            if(nwrite < 0 && errno == EINTR) {
+        if(nwrite < 0) {
+            if(errno == EINTR) {
                 nwrite = 0;
             } else {
-                puts("TCPSocket Send Error!");
+#if TCPSocket_ERROR_MSG
+                puts("TCPSocket Send ERROR!");
+#endif
                 return  -1;
             }
         }
@@ -94,11 +98,19 @@ int TCPSocket::TCPSocketRead(char *buffer, int size)
     int len = size;
     while(len > 0) {
         int nread = recv(m_ConnFd, buffer, len, TCPSocket_RECV_FLAG);
+        if(nread == 0) {
+#if TCPSocket_ERROR_MSG
+            puts("TCPSocket broken pipe!");
+#endif
+            return 0;
+        }
         if(nread < 0) {
             if(errno == EINTR) {
                 nread = 0;
             } else {
-                puts("TCPSocket Recv Error!");
+#if TCPSocket_ERROR_MSG
+                puts("TCPSocket Recv ERROR!");
+#endif
                 return -1;
             }
         }
@@ -114,11 +126,19 @@ int TCPSocket::TCPSocketReadLine(char *buffer, int MaxReadLength)
     char data;
     while(1) {
         int nread = recv(m_ConnFd, &data, 1, TCPSocket_RECV_FLAG);
+        if(nread == 0) {
+#if TCPSocket_ERROR_MSG
+            puts("TCPSocket broken pipe!");
+#endif
+            return 0;
+        }
         if(nread < 0) {
             if(errno == EINTR) {
                 nread = 0;
             } else {
-                puts("TCPSocket RecvLine Error!");
+#if TCPSocket_ERROR_MSG
+                puts("TCPSocket RecvLine ERROR!");
+#endif
                 return -1;
             }
         }

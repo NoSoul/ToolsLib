@@ -114,7 +114,7 @@ int main()
         } else {
             cur = testPoolY.Get(IdxY[i]);
             if(cur - pre != 4) {
-                puts("error");
+                puts("ERROR");
             }
             pre = cur;
         }

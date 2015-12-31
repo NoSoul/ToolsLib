@@ -331,7 +331,7 @@ void RBTreeDel(RBTree_t *tree, PrimaryType_t num)
     check.mPrimaryVal = num;
     struct RBNode_t *node = RBTreeSearch(tree->mTreeRoot, &check, &tree->mSentinelLeaf);
     if(node == &tree->mSentinelLeaf) {
-        puts("Error");
+        puts("ERROR");
         return;
     }
     RBTreeDelete(tree, node);
