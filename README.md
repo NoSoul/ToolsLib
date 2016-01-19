@@ -1,9 +1,15 @@
 # ToolsLib
+### BinaryHeap
+* 二叉堆：求最值、堆排序
+
 ### ColorBashLog
 * 打印类,根据不同log等级,打印不同颜色
 
 ### FIFO
 * First In First Out类
+
+### Manacher
+* 最长回文串算法
 
 ### OBPool
 * 对象池模板类
