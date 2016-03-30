@@ -73,8 +73,8 @@ private:
     }
 };
 
-OBPool<B> testPoolX;
-OBPool<C> testPoolY;
+OBPool<B> testPoolX("testPoolX");
+OBPool<C> testPoolY("testPoolY");
 map<int, unsigned int> Map;
 pthread_mutex_t g_ProtectedMutex;
 
@@ -99,8 +99,6 @@ int main()
     pthread_mutex_init(&g_ProtectedMutex, NULL);
     testPoolX.SetBlockSize(8);
     testPoolY.SetBlockSize(128);
-    unsigned int NULLIdx = testPoolX.AllocOB();
-    printf("%u\n", NULLIdx);
     const int N = OB_POOL_ADD_BLOCK * 5 * 2 + 2;
     unsigned int IdxX[N], IdxY[N];
     for(int i = 0; i < N; ++i) {

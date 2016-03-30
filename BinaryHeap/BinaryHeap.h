@@ -20,7 +20,7 @@ DataType_t BinaryHeapPop(DataType_t *array, unsigned int *len)
     unsigned int now = 1, temp;
     while((now << 1) <= *len) {
         temp = now << 1;
-        if((temp + 1) <= *len && array[temp] < array[temp + 1]) {
+        if((temp + 1) <= *len && array[temp + 1] > array[temp]) {
             ++temp;
         }
         if(array[temp] > array[*len]) {

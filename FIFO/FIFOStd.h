@@ -32,16 +32,16 @@ public:
         }
         if(i == 32) {
             puts("The size of FIFOStd is not 2^N or too big");
-            exit(0);
+            quick_exit(0);
         }
         if(m_Data != NULL) {
-            puts("double ReSize");
-            exit(0);
+            puts("double ReSize FIFOStd");
+            quick_exit(0);
         }
         m_Data = new FIFOType_t[size];
         if(m_Data == NULL) {
-            puts("bad alloc");
-            exit(0);
+            puts("bad alloc FIFOStd");
+            quick_exit(0);
         }
         m_ReadPos = 0;
         m_WritePos = 0;

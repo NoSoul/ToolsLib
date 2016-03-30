@@ -30,8 +30,8 @@ public:
         }
         m_Data = new SlideWinType_t[size];
         if(m_Data == nullptr) {
-            puts("bad alloc");
-            exit(0);
+            printf("SlideWin bad alloc %d\n", __LINE__);
+            quick_exit(0);
         }
         m_ReadPos = 0;
         m_WritePos = 0;
@@ -49,8 +49,8 @@ public:
         }
         m_Data = new SlideWinType_t[source.m_Size];
         if(m_Data == nullptr) {
-            puts("bad alloc");
-            exit(0);
+            printf("SlideWin bad alloc %d\n", __LINE__);
+            quick_exit(0);
         }
         memcpy(m_Data, source.m_Data, source.m_Size * sizeof(SlideWinType_t));
         m_ReadPos = source.m_ReadPos;

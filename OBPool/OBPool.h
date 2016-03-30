@@ -9,7 +9,7 @@ template <typename OB_t>
 class OBPool
 {
 public:
-    OBPool()
+    OBPool(const char *name)
     {
         m_Data = NULL;
         m_Flag = NULL;
@@ -20,12 +20,11 @@ public:
         pthread_mutex_init(&m_Mutex, NULL);
         m_BitShift = 0;
         m_FastModLen = 0;
+        memcpy(m_Name, name, strlen(name));
     }
     ~OBPool()
     {
-        if(m_BlockSize) {
-            FreeOB(0);
-        }
+        pthread_mutex_lock(&m_Mutex);
         for(auto i = 0u; i < m_BlockNum; ++i) {
             if(m_Data[i]) {
                 delete[] m_Data[i];
@@ -40,12 +39,13 @@ public:
         if(m_Flag) {
             delete[] m_Flag;
         }
+        pthread_mutex_unlock(&m_Mutex);
         pthread_mutex_destroy(&m_Mutex);
     }
     void SetBlockSize(unsigned int blockSize)
     {
         if(m_BlockSize != 0 || m_BlockNum != 0) {
-            puts("double SetBlockSize");
+            printf("%s double SetBlockSize\n", m_Name);
             quick_exit(0);
         }
         for(m_BitShift = 1; m_BitShift < 32; ++m_BitShift) {
@@ -54,7 +54,7 @@ public:
             }
         }
         if(m_BitShift == 32) {
-            puts("The blockSize is not 2^N or too big");
+            printf("%s The blockSize is not 2^N or too big\n", m_Name);
             quick_exit(0);
         }
         m_BlockSize = blockSize;
@@ -102,7 +102,7 @@ public:
     auto Get(const unsigned int idx)->decltype(OB_t::m_ForDeclGet)
     {
         if(!m_Flag[idx >> m_BitShift][idx & m_FastModLen]) {
-            printf("OBPool Idx %u invalid\n", idx);
+            printf("%s OBPool Idx %u invalid\n", m_Name, idx);
             quick_exit(0);
         }
         return m_Data[idx >> m_BitShift][0].Get(idx & m_FastModLen);
@@ -117,6 +117,7 @@ private:
     pthread_mutex_t m_Mutex;
     unsigned int m_BitShift;
     unsigned int m_FastModLen;
+    char m_Name[512];
 
     void Expand()
     {
