@@ -1,79 +1,47 @@
 #include "FIFOStd.h"
-#include <pthread.h>
-#include <semaphore.h>
 
-const int loop = 1000;
-FIFOStd<int> FIFO;
-sem_t Sem;
-
-void *Add(void *arg)
+class FIFOInt: public FIFOStd<int>
 {
-    for(int i = 0; i < loop; ++i) {
-        *(FIFO.m_WritePtr) = i;
-        FIFO.Push();
-        sem_post(&Sem);
-    }
-    return arg;
-}
-
-void *Sub(void *arg)
-{
-    int i = 0;
-    while(1) {
-        sem_wait(&Sem);
-        FIFO.Pop();
-        printf("%d\n", FIFO.GetLength());
-        if(++i == loop) {
-            break;
+public:
+    void SetData(int num)
+    {
+        *m_WritePtr = num;
+        if(!Push()) {
+            printf("FIFOInt full By Push %d\n", num);
+            quick_exit(0);
         }
     }
-    return arg;
-}
+};
 
 int main()
 {
-    FIFOStd<int> C[100][10];
-    FIFOStd<int> A;
-    FIFOStd<double> B;
-    for(int i = 0; i < 100; ++i) {
-        for(int j = 0; j < 10; ++j) {
-            C[i][j].ReSize(4);
+    FIFOInt A[2][2];
+    for(int i = 0; i < 2; ++i) {
+        for(int j = 0; j < 2; ++j) {
+            A[i][j].ReSize((i + 1) * 128);
         }
     }
-    A.ReSize(16);
-    B.ReSize(16);
-    *(A.m_WritePtr) = 1;
-    A.Push();
-    *(A.m_WritePtr) = 2;
-    A.Push();
-    *(B.m_WritePtr) = 0.3;
-    B.Push();
-    *(B.m_WritePtr) = 0.4;
-    B.Push();
-    printf("len: %d\n", A.GetLength());
-    printf("Tail: %d\n", *A.Pop());
-    printf("len: %d\n", A.GetLength());
-    A.Clear();
-    printf("len: %d\n", A.GetLength());
+    A[0][0].ReSize(64);
+    A[0][0].SetData(12);
+    printf("A[0][0] Have %llu\n", A[0][0].GetLength());
+    A[0][0].Clear();
+    printf("A[0][0] Have %llu\n", A[0][0].GetLength());
 
-    printf("\n");
-    printf("len: %d\n", B.GetLength());
-    printf("Tail: %lf\n", *B.Pop());
-    printf("len: %d\n", B.GetLength());
-    B.Clear();
-    printf("len: %d\n", B.GetLength());
-
-    *(C[0][0].m_WritePtr) = 1;
-    C[0][0].Push();
-    printf("len: %d\n", C[0][0].GetLength());
-
-    sem_init(&Sem, 0, 0);
-    FIFO.ReSize(1024);
-    pthread_t taskAdd, taskSub;
-    pthread_create(&taskAdd, NULL, Add, NULL);
-    pthread_create(&taskSub, NULL, Sub, NULL);
-    pthread_join(taskSub, NULL);
-    pthread_join(taskAdd, NULL);
-    sem_destroy(&Sem);
+    A[0][0].SetProtectInterval(5);
+    for(int i = 1; i < 10; ++i) {
+        A[0][0].SetData(i);
+        printf("After Push %d FIFOStd Have %llu\n", i, A[0][0].GetLength());
+    }
+    for(int i = 10; i <= 100; ++i) {
+        if(A[0][0].GetLength() > 10) {
+            A[0][0].CommitRead(10);
+            for(int i = -5; i <= 0; ++i) {
+                printf("%d ", *A[0][0].Watch(i));
+            }
+            puts("");
+        }
+        A[0][0].SetData(i);
+        printf("After Push %d FIFOStd Have %llu\n", i, A[0][0].GetLength());
+    }
     return 0;
 }
