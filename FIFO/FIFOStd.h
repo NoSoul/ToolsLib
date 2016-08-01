@@ -15,7 +15,7 @@ public:
         m_Size = 0;
         m_ProtectInterval = 1;
     }
-    ~FIFOStd()
+    virtual ~FIFOStd()
     {
         if(m_Data) {
             delete[] m_Data;

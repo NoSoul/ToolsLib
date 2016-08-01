@@ -22,7 +22,7 @@ public:
         m_FastModLen = 0;
         memcpy(m_Name, name, strlen(name));
     }
-    ~OBPool()
+    virtual ~OBPool()
     {
         pthread_mutex_lock(&m_Mutex);
         for(auto i = 0u; i < m_BlockNum; ++i) {
@@ -106,6 +106,21 @@ public:
             quick_exit(0);
         }
         return m_Data[idx >> m_BitShift][0].Get(idx & m_FastModLen);
+    }
+    void FindSameElememt(OB_t **ans, OB_t *key, unsigned int keyIdx)
+    {
+        int cnt = 0;
+        pthread_mutex_lock(&m_Mutex);
+        for(auto idx = 0u; idx < m_BlockNum * m_BlockSize; ++idx) {
+            unsigned int x = idx >> m_BitShift;
+            unsigned int y =  idx & m_FastModLen;
+            if(m_Flag[x][y] && idx != keyIdx) {
+                if(*key == *(m_Data[idx >> m_BitShift][0].Get(idx & m_FastModLen))) {
+                    ans[cnt++] = m_Data[idx >> m_BitShift][0].Get(idx & m_FastModLen);
+                }
+            }
+        }
+        pthread_mutex_unlock(&m_Mutex);
     }
 private:
     OB_t **m_Data;
