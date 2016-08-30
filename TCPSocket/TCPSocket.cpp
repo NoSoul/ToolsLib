@@ -66,6 +66,7 @@ void TCPSocket::ReconnTCPSocket()
     if(m_Reconn == false) {
         m_Reconn = true;
         shutdown(m_ConnFd, SHUT_RDWR);
+        m_ConnFd = -1;
         shutdown(m_ListenFd, SHUT_RDWR);
         InitialServer();
         m_Reconn = false;
@@ -75,7 +76,7 @@ void TCPSocket::ReconnTCPSocket()
 int TCPSocket::TCPSocketWrite(const char *buffer, int size)
 {
     int len = size;
-    while(len > 0) {
+    while(~m_ConnFd && len > 0) {
         int nwrite = send(m_ConnFd, buffer, len, TCPSocket_SEND_FLAG);
         if(nwrite < 0) {
             if(errno == EINTR) {
@@ -90,13 +91,13 @@ int TCPSocket::TCPSocketWrite(const char *buffer, int size)
         len -= nwrite;
         buffer += nwrite;
     }
-    return size;
+    return ~m_ConnFd ? size : 0;
 }
 
 int TCPSocket::TCPSocketRead(char *buffer, int size)
 {
     int len = size;
-    while(len > 0) {
+    while(~m_ConnFd && len > 0) {
         int nread = recv(m_ConnFd, buffer, len, TCPSocket_RECV_FLAG);
         if(nread == 0) {
 #if TCPSocket_ERROR_MSG
@@ -124,7 +125,7 @@ int TCPSocket::TCPSocketReadLine(char *buffer, int MaxReadLength)
 {
     int len = 0;
     char data;
-    while(1) {
+    while(~m_ConnFd) {
         int nread = recv(m_ConnFd, &data, 1, TCPSocket_RECV_FLAG);
         if(nread == 0) {
 #if TCPSocket_ERROR_MSG

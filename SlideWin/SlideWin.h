@@ -65,6 +65,7 @@ public:
         m_ReadPos = 0;
         m_WritePos = 0;
         m_Count = 0;
+        m_Sum = 0;
         if(m_Data == nullptr) {
             m_WritePtr = nullptr;
         } else {

@@ -82,12 +82,6 @@ public:
         m_ReadPos = (m_ReadPos + 1) & (m_Size - 1);
         return result;
     }
-    FIFOType_t *Watch(const long long offset)
-    {
-        unsigned long long newReadPos = (m_ReadPos + offset + m_Size) & (m_Size - 1);
-        FIFOType_t *result = &m_Data[newReadPos];
-        return result;
-    }
     unsigned long long GetLength()
     {
         return (m_WritePos + m_Size - m_ReadPos) & (m_Size - 1);
