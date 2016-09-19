@@ -3,10 +3,10 @@
 
 typedef int DataType_t;
 
-void BinaryHeapPush(DataType_t *array, unsigned int *len, DataType_t val)
+void BinaryHeapPush(DataType_t *array, int *len, DataType_t val)
 {
     ++(*len);
-    unsigned int now = *len;
+    int now = *len;
     while(now > 1 && val > array[now >> 1]) {
         array[now] = array[now >> 1];
         now >>= 1;
@@ -14,10 +14,10 @@ void BinaryHeapPush(DataType_t *array, unsigned int *len, DataType_t val)
     array[now] = val;
 }
 
-DataType_t BinaryHeapPop(DataType_t *array, unsigned int *len)
+DataType_t BinaryHeapPop(DataType_t *array, int *len)
 {
     DataType_t ret = array[1];
-    unsigned int now = 1, temp;
+    int now = 1, temp;
     while((now << 1) <= *len) {
         temp = now << 1;
         if((temp + 1) <= *len && array[temp + 1] > array[temp]) {
@@ -35,10 +35,10 @@ DataType_t BinaryHeapPop(DataType_t *array, unsigned int *len)
     return ret;
 }
 
-void BinaryHeapSort(DataType_t *array, unsigned int len)
+void BinaryHeapSort(DataType_t *array, int len)
 {
     while(len) {
-        unsigned int curIdx = len;
+        int curIdx = len;
         array[curIdx] = BinaryHeapPop(array, &len);
     }
 }

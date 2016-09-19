@@ -8,7 +8,6 @@
 #include <unistd.h>
 #define TCPSocket_RECV_FLAG 0
 #define TCPSocket_SEND_FLAG 0
-#define TCPSocket_ERROR_MSG 0
 class TCPSocket
 {
 public:
