@@ -8,6 +8,9 @@
 ### FIFO
 * First In First Out类
 
+### HeapSlideWin
+* 从滑动窗选择较大/较小部分求平均类
+
 ### Manacher
 * 最长回文串算法
 
