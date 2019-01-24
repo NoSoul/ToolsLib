@@ -3,11 +3,16 @@
 
 typedef int DataType_t;
 
+int DataCMP(DataType_t a, DataType_t b)
+{
+    return a > b ? 1 : 0;
+}
+
 void BinaryHeapPush(DataType_t *array, int *len, DataType_t val)
 {
     ++(*len);
     int now = *len;
-    while(now > 1 && val > array[now >> 1]) {
+    while(now > 1 && DataCMP(val, array[now >> 1])) {
         array[now] = array[now >> 1];
         now >>= 1;
     }
@@ -20,10 +25,10 @@ DataType_t BinaryHeapPop(DataType_t *array, int *len)
     int now = 1, temp;
     while((now << 1) <= *len) {
         temp = now << 1;
-        if((temp + 1) <= *len && array[temp + 1] > array[temp]) {
+        if((temp + 1) <= *len && DataCMP(array[temp + 1], array[temp])) {
             ++temp;
         }
-        if(array[temp] > array[*len]) {
+        if(DataCMP(array[temp], array[*len])) {
             array[now] = array[temp];
         } else {
             break;
