@@ -35,7 +35,7 @@ public:
     }
     B *Get(const unsigned int idx)
     {
-        return (B*)this + idx;
+        return (B *)this + idx;
     }
     A m_RM[MAXN];
 };
@@ -49,7 +49,7 @@ public:
     }
     void *operator new[](size_t size)
     {
-        float *mem = (float*)memalign(32, sizeof(float) * 4 * size);
+        float *mem = (float *)memalign(32, sizeof(float) * 4 * size);
         return mem;
     }
     void operator delete[](void *p)
@@ -58,7 +58,7 @@ public:
     }
     float *Get(const unsigned int idx)
     {
-        return (float*)this + idx * 4;
+        return (float *)this + idx * 4;
     }
 private:
     void *operator new(size_t size)
@@ -97,9 +97,9 @@ void *Fun(void *arg)
 int main()
 {
     pthread_mutex_init(&g_ProtectedMutex, NULL);
-    testPoolX.SetBlockSize(8);
-    testPoolY.SetBlockSize(128);
-    const int N = OB_POOL_ADD_BLOCK * 5 * 2 + 2;
+    testPoolX.SetParm(1, 8, 1);
+    testPoolY.SetParm(1, 128, 1);
+    const int N = 5 * 2 + 2;
     unsigned int IdxX[N], IdxY[N];
     for(int i = 0; i < N; ++i) {
         IdxX[i] = testPoolX.AllocOB();

@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#define OB_POOL_ADD_BLOCK   1
 template <typename OB_t>
 class OBPool
 {
@@ -20,6 +19,7 @@ public:
         pthread_mutex_init(&m_Mutex, NULL);
         m_BitShift = 0;
         m_FastModLen = 0;
+        m_AddBlockDelta = 1;
         memcpy(m_Name, name, strlen(name));
     }
     virtual ~OBPool()
@@ -42,10 +42,14 @@ public:
         pthread_mutex_unlock(&m_Mutex);
         pthread_mutex_destroy(&m_Mutex);
     }
-    void SetBlockSize(unsigned int blockSize)
+    virtual size_t size()
+    {
+        return sizeof(int);
+    }
+    void SetParm(unsigned blockNum, unsigned int blockSize, int addDelta)
     {
         if(m_BlockSize != 0 || m_BlockNum != 0) {
-            printf("%s double SetBlockSize\n", m_Name);
+            printf("%s double %s\n", m_Name, __func__);
             quick_exit(0);
         }
         for(m_BitShift = 1; m_BitShift < 32; ++m_BitShift) {
@@ -57,18 +61,27 @@ public:
             printf("%s The blockSize is not 2^N or too big\n", m_Name);
             quick_exit(0);
         }
+        if(blockNum == 0) {
+            printf("%s The blockNum equal 0\n", m_Name);
+            quick_exit(0);
+        }
+        if(addDelta < 1) {
+            printf("%s The addDelta less then 1\n", m_Name);
+            quick_exit(0);
+        }
+        m_BlockNum = blockNum;
         m_BlockSize = blockSize;
+        m_AddBlockDelta = addDelta;
+        printf("OBPool:: %s SetBlockSize %zu\n", m_Name, (size() + sizeof(bool)) * m_BlockNum * m_BlockSize);
         m_FastModLen = m_BlockSize - 1;
-        m_Data = new OB_t*[OB_POOL_ADD_BLOCK];
-        m_Flag = new bool*[OB_POOL_ADD_BLOCK];
-        for(int i = 0; i < OB_POOL_ADD_BLOCK; ++i) {
+        m_Data = new OB_t*[m_BlockNum];
+        m_Flag = new bool*[m_BlockNum];
+        for(unsigned i = 0; i < m_BlockNum; ++i) {
             m_Data[i] = new OB_t[m_BlockSize];
-            m_Flag[i] = new bool[m_BlockSize];
-            memset(m_Flag[i], 0, sizeof(bool)*m_BlockSize);
+            m_Flag[i] = new bool[m_BlockSize]();
         }
         m_LastAllocIdx = 0;
-        m_BlockNum = OB_POOL_ADD_BLOCK;
-        m_Count = m_BlockSize * OB_POOL_ADD_BLOCK;
+        m_Count = m_BlockSize * m_BlockNum;
     }
     unsigned int AllocOB()
     {
@@ -132,18 +145,19 @@ private:
     pthread_mutex_t m_Mutex;
     unsigned int m_BitShift;
     unsigned int m_FastModLen;
+    int m_AddBlockDelta;
     char m_Name[512];
 
     void Expand()
     {
-        OB_t **dataMem = new OB_t*[m_BlockNum + OB_POOL_ADD_BLOCK];
-        bool **flagMem = new bool*[m_BlockNum + OB_POOL_ADD_BLOCK];
-        memcpy(dataMem, m_Data, sizeof(OB_t*)*m_BlockNum);
-        memcpy(flagMem, m_Flag, sizeof(bool*)*m_BlockNum);
-        for(int i = 0; i < OB_POOL_ADD_BLOCK; ++i) {
+        printf("OBPool:: %s Expand %zu\n", m_Name, (size() + sizeof(bool)) * (m_BlockNum + m_AddBlockDelta)*m_BlockSize);
+        OB_t **dataMem = new OB_t*[m_BlockNum + m_AddBlockDelta];
+        bool **flagMem = new bool*[m_BlockNum + m_AddBlockDelta];
+        memcpy(dataMem, m_Data, sizeof(OB_t *) * m_BlockNum);
+        memcpy(flagMem, m_Flag, sizeof(bool *) * m_BlockNum);
+        for(int i = 0; i < m_AddBlockDelta; ++i) {
             dataMem[m_BlockNum + i] = new OB_t[m_BlockSize];
-            flagMem[m_BlockNum + i] = new bool[m_BlockSize];
-            memset(flagMem[m_BlockNum + i], 0, sizeof(bool)*m_BlockSize);
+            flagMem[m_BlockNum + i] = new bool[m_BlockSize]();
         }
         OB_t **delData = m_Data;
         bool **delFlag = m_Flag;
@@ -152,8 +166,8 @@ private:
         delete[] delData;
         delete[] delFlag;
         m_LastAllocIdx = m_BlockNum * m_BlockSize;
-        m_BlockNum += OB_POOL_ADD_BLOCK;
-        m_Count = m_BlockSize * OB_POOL_ADD_BLOCK;
+        m_BlockNum += m_AddBlockDelta;
+        m_Count = m_BlockSize * m_AddBlockDelta;
     }
 };
 #endif
