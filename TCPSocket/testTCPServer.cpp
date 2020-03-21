@@ -5,37 +5,50 @@ TCPSocket *SocketHandle;
 
 void *Recv(void *arg)
 {
-    int MsgLen;
-    char ReceiveBuffer[1024];
+    int msgLen;
+    char ReceiveBuffer[1024] = {0};
     while(1) {
-        while((MsgLen = SocketHandle->TCPSocketReadLine(ReceiveBuffer, 1024)) != -1) {
-            printf("Server Recv<%d>: %s", MsgLen, ReceiveBuffer);
+        msgLen = SocketHandle->TCPSocketReadLine(ReceiveBuffer, 1024);
+        if(msgLen > 0) {
+            printf("Server Recv<%d>: %s", msgLen, ReceiveBuffer);
         }
-        SocketHandle->ReconnTCPSocket();
     }
-    return NULL;
+    return arg;
 }
 
 void *Send(void *arg)
 {
-    pthread_detach(pthread_self());
-    int MsgLen;
     while(1) {
-        while((MsgLen = SocketHandle->TCPSocketWrite("I'm Server!", 11)) != -1) {
-            sleep(1);
-        }
-        SocketHandle->ReconnTCPSocket();
+        SocketHandle->TCPSocketWrite("I'm Server!", 11);
+        sleep(1);
     }
-    return NULL;
+    return arg;
+}
+
+void Func(void *arg)
+{
+    if(arg) {
+    }
+    SocketHandle->TCPSocketWrite("Hello Start", 11);
 }
 
 int main()
 {
     SocketHandle = new TCPSocket(7777);
-    SocketHandle->InitialServer();
+    SocketHandle->InitialServer(NULL, NULL, &Func, NULL);
     pthread_t recv, send;
     pthread_create(&recv, NULL, Recv, NULL);
     pthread_create(&send, NULL, Send, NULL);
+    while(1) {
+        char cmd = getchar();
+        if(cmd == 'q') {
+            break;
+        }
+    }
+    pthread_cancel(send);
+    pthread_cancel(recv);
+    pthread_join(send, NULL);
     pthread_join(recv, NULL);
+    delete SocketHandle;
     return 0;
 }

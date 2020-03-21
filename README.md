@@ -17,9 +17,6 @@
 ### OBPool
 * 对象池模板类
 
-### POSIXLib
-* 封装pthread系列
-
 ### RedBlackTree
 * 红黑树
 
