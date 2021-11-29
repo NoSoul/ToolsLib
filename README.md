@@ -5,6 +5,9 @@
 ### ColorBashLog
 * 打印类,根据不同log等级,打印不同颜色
 
+### CPP Design Pattern
+* 23种设计模式
+
 ### FIFO
 * First In First Out类
 
